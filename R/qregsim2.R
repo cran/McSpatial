@@ -107,6 +107,7 @@ qregsim2 <- function(formall, formx, dataframe1, dataframe2, bmat1, bmat2,
   if (identical(znames,"(Intercept)")) {xhat12 <- xhat1}
   if (!identical(znames,"(Intercept)")) {
     xhat12 <- cbind(xhat2[,znames],xhat1[,colnames(xmat1)])
+    colnames(xhat12) <- c(znames,colnames(xmat1))
     xhat12 <- xhat12[,colnames(allmat1)]
   }
   bhat1 <- bmat1[bobs,]

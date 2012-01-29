@@ -31,7 +31,6 @@ Daniel McMillen.  Data are drawn from the U.S. Census and the Cook County Assess
 library(maptools)
 cook <- readShapePoly(system.file("maps/CookCensusTracts.shp",
   package="McSpatial"))
-# to add O'Hare back in:
 sampvar <- cook$CHICAGO==1|(!is.na(cook$CAREA)&cook$CAREA=="O'Hare")
 cook <- cook[sampvar==TRUE,]
 

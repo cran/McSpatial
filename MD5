@@ -1,5 +1,5 @@
-985b7eb7d265289ffbb6988dbbba43ea *DESCRIPTION
-7a19fee4c642dcdee75ed9e371a6043e *NAMESPACE
+668325591574dbd907b2b008b753df82 *DESCRIPTION
+41a54caedd3925978b9ecbe0c9c33bf3 *NAMESPACE
 dcf762beacadaad97e0b857fd0f2f855 *R/McSpatial-internal.R
 ed7b2de2ae107e0911faae867f160897 *R/condens.R
 fe718df8455b44ca1a48adf1fa684cc0 *R/cparlogit.R
@@ -33,7 +33,7 @@ aaf50a1705f57ce5f2e6b2d307b6b1f6 *R/misclass.R
 3d28db98a557570225daaa01dbf652ed *R/qregcpar.R
 01917e7a09570759c789976bccc1656e *R/qreglwr.R
 d94ea3a90b67dc86e27e553a0db536cc *R/qregsim1.R
-55767d169c8607058db41e08438a1cd2 *R/qregsim2.R
+757b557aca0a9283fdbed1ccf4e56f5e *R/qregsim2.R
 2980f2a1151850a0211484f734805321 *R/qregspiv.R
 df592836029061e33c7e5182a7099a97 *R/repsale.R
 b7aca9eb4c28b0ca46f4149406556976 *R/repsaledata.R
@@ -53,8 +53,8 @@ ee2574c37ec1d9988339d3baf448d0ff *data/dupage99.rda
 4ffcf5da90a74cc0f99f50b697b72373 *inst/maps/CookCensusTracts.prj
 ee4f70ccce57297cdeb2ddb023f87df0 *inst/maps/CookCensusTracts.shp
 8d6e51592bb51901defb33ebe34ffcbb *inst/maps/CookCensusTracts.shx
-d1636abf3ff885eaf6c69e3d123603a7 *man/CookCensusTracts.Rd
-2688319b83687b6ce51e227569d9b54a *man/McSpatial-package.Rd
+a0c673ea79c013f9a2867ae3c84f66ce *man/CookCensusTracts.Rd
+cf58e710b5225e7e717a508018f19952 *man/McSpatial-package.Rd
 008a16fff5cf20a58589204e0b325436 *man/condens.Rd
 538c3f4248fd95b985ec5e06b496c0ea *man/cookdata.Rd
 d05afd16f185a90bb17d739c55ad220a *man/cparlogit.Rd

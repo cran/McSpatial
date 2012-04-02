@@ -85,7 +85,8 @@ y <- x*1 + rnorm(n, 0, sd(x)/2)
 y <- ifelse(y>0,1,0)
 e <- runif(n)
 misy <- y
-misy <- ifelse(e<.05&y==0,1,y)
+misy <- ifelse(e<.10&y==0,1,y)
+misy <- ifelse(e>.90&y==1,0,misy)
 table(y,misy)
 fit <- misclass(misy~x)
 }

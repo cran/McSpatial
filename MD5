@@ -1,4 +1,4 @@
-668325591574dbd907b2b008b753df82 *DESCRIPTION
+105d0280816210d0062d4096afc6fce1 *DESCRIPTION
 41a54caedd3925978b9ecbe0c9c33bf3 *NAMESPACE
 dcf762beacadaad97e0b857fd0f2f855 *R/McSpatial-internal.R
 ed7b2de2ae107e0911faae867f160897 *R/condens.R
@@ -54,7 +54,7 @@ ee2574c37ec1d9988339d3baf448d0ff *data/dupage99.rda
 ee4f70ccce57297cdeb2ddb023f87df0 *inst/maps/CookCensusTracts.shp
 8d6e51592bb51901defb33ebe34ffcbb *inst/maps/CookCensusTracts.shx
 a0c673ea79c013f9a2867ae3c84f66ce *man/CookCensusTracts.Rd
-cf58e710b5225e7e717a508018f19952 *man/McSpatial-package.Rd
+9afa8e0d8629592d8d90822baa84bd9d *man/McSpatial-package.Rd
 008a16fff5cf20a58589204e0b325436 *man/condens.Rd
 538c3f4248fd95b985ec5e06b496c0ea *man/cookdata.Rd
 d05afd16f185a90bb17d739c55ad220a *man/cparlogit.Rd
@@ -84,7 +84,7 @@ de357be95377cdcfe7d36980442f9270 *man/mappoints.Rd
 8e75557dad72abb6b597786399d422d8 *man/matchmahal.Rd
 ce082c0f5ff25c6ef701bd6b96bd6954 *man/matchprop.Rd
 2f57354f77daf8302722377096d81c1c *man/matchqreg.Rd
-1c34935681b00b676e390f8c52c12c94 *man/misclass.Rd
+84d91753d2cd17c546f80c44b8dd2c85 *man/misclass.Rd
 c0daf499bbc1daba98a0cbde35f86aae *man/qregbmat.Rd
 48684bac12c557100b99b27e96f11c34 *man/qregcdf.Rd
 607ea33edba9c04605d98a21a66426f9 *man/qregcpar.Rd

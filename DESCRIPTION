@@ -1,8 +1,8 @@
 Package: McSpatial
 Type: Package
 Title: Nonparametric spatial data analysis
-Version: 1.1
-Date: 2012-3-38
+Version: 1.1.1
+Date: 2012-4-02
 Author: Daniel McMillen
 Maintainer: Daniel McMillen <mcmillen@illinois.edu>
 Description: Locally weighted regression, semiparametric and
@@ -19,6 +19,6 @@ LazyLoad: yes
 Depends: akima, lattice, locfit, quantreg, SparseM
 Suggests: car, classInt, maptools, mlogit, RColorBrewer, spatstat,
         spdep
-Packaged: 2012-03-29 12:15:47 UTC; Dan
+Packaged: 2012-04-02 18:41:08 UTC; Dan
 Repository: CRAN
-Date/Publication: 2012-03-29 12:43:28
+Date/Publication: 2012-04-03 21:01:53

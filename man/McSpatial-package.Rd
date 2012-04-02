@@ -15,8 +15,8 @@ repeat sales models, conditionally parametric logit and probit
 \tabular{ll}{
 Package: \tab McSpatial\cr
 Type: \tab Package\cr
-Version: \tab 1.1\cr
-Date: \tab 2012-1-28\cr
+Version: \tab 1.1.1\cr
+Date: \tab 2012-4-12\cr
 License: \tab GPL \cr
 LazyLoad: \tab yes\cr
 }

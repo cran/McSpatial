@@ -1,8 +1,6 @@
 matchqreg <- function(form,taumat=c(.10,.25,.50,.75,.90), qreglwr.smooth=TRUE, window=.50,bandwidth=0,kern="tcub", alldata=FALSE,
   graph.yhat=TRUE,graph.mean=TRUE,data) {
 
-  library(locfit)
-
   mat <- model.frame(form,data=data)
   n = length(mat[,1])
   ntau <- length(taumat)

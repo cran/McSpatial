@@ -10,7 +10,7 @@ Estimates a model of the form \emph{y = f(x)} using locally weighted quantile re
 
 \usage{ 
 qreglwr(form,taumat=c(.10,.25,.50,.75,.90), window=.25,bandwidth=0,
-  kern="tcub", distance="Mahal",alldata=FALSE,data=NULL)
+  kern="tcub", distance="Mahal",target=NULL,data=NULL)
 }
 
 \arguments{
@@ -25,10 +25,9 @@ May be abbreviated to the first letter but must be capitalized.
 Note:  \emph{qreglwr} looks for the first two letters to determine which variable is latitude and which is longitude, 
 so the data set must be attached first or specified using the data option; options like data$latitude will not work.  
 Default:  Mahal. }
-  \item{alldata }{If \emph{alldata=T}, each observation is used as a target value for \emph{x}.  
-When \emph{alldata=F}, the function is estimated at a set of points chosen by the \emph{locfit} program using an adaptive decision tree approach, 
-and the \emph{akima} program is used to interpolate to the full set of observations.  
-Specifying \emph{alldata=T} can lead to long estimation times.}
+  \item{target}{If \emph{target = NULL}, uses the \emph{maketarget} command to form targets using the values specified for \emph{window}, 
+\emph{bandwidth}, and \emph{kern}.  If \emph{target="alldata"}, each observation is used as a target value for \emph{x}.  
+A set of target values can be supplied directly. }
   \item{data }{A data frame containing the data. Default:  use data in the current working directory.}
 }
 
@@ -63,7 +62,7 @@ Serves as an interface to the \emph{quantreg} package.
 Uses a kernel weight function in \emph{quantreg's} "weight" option to estimate quantile regressions at a series of target values of \emph{x}.  
 \emph{x} may include either one or two variables.
 The target values are found using \emph{locfit's} adaptive decision tree approach.   
-The predictions are then interpolated to the full set of \emph{x} values using the \emph{akima} package.  
+The predictions are then interpolated to the full set of \emph{x} values using the \emph{smooth12} command.  
 If \emph{alldata=T}, the procedure is applied to every value of \emph{x} rather than a set of target points.  
 
 The weights at a target value \eqn{x_0}{x0} are given by \eqn{K(\psi/h)}, 
@@ -93,10 +92,9 @@ and \emph{yhat.se} (all observations).  The standard errors for the slopes are s
 
 When \emph{alldata=T}, each data point in turn is used as a target point, \eqn{x_0}{x0}.  
 Fixed bandwidths may prove too small if there are regions where \emph{x} is sparse.  A nearest neighbor approach is generally preferable (e.g, window=.50).  
-Estimation can be very slow when \emph{alldata=T}.  
-When \emph{alldata=F}, the package \emph{locfit} is used to find a good set of target points at which to evaluate the function.  
-See Loader (1999, section 12.2) for a description of the algorithm used to determine the target points.  
-The \emph{akima} package is then used to interpolate the coefficient estimates and standard errors.  
+Estimation can be very slow when \emph{target = "alldata"}.  The \emph{maketarget} command can be used to identify target points. 
+The \emph{smooth12} command is then used to interpolate the coefficient estimates and standard errors.
+  
 
 
 Available kernel weighting functions include the following:  
@@ -152,7 +150,6 @@ legend("topright", c("LWR", "tau = 50", "tau = 10, 90"), col=c("black","red", "r
   lwd=1, lty=c("solid","solid","dashed"))
 
 \dontrun{
-library(maptools)
 library(RColorBrewer)
 cmap <- readShapePoly(system.file("maps/CookCensusTracts.shp",
   package="McSpatial"))
@@ -164,16 +161,16 @@ cmap$lwr50[cookdata$obs] <- fit$yhat[,2]
 cmap$lwr90[cookdata$obs] <- fit$yhat[,3]
 cmap$lwr1090[cookdata$obs] <- fit$yhat[,3] - fit$yhat[,1]
 brks <- seq(min(cmap$lwr10,na.rm=TRUE),max(cmap$lwr10,na.rm=TRUE),length=9)
-spplot(cmap,"lwr10",at=brks,col.regions=rev(brewer.pal(9,"RdBu")),
+spplot(cmap,"lwr10",at=brks,col.regions=rev(brewer.pal(8,"RdBu")),
    main="Log Density Estimates, tau = .10")
 brks <- seq(min(cmap$lwr50,na.rm=TRUE),max(cmap$lwr50,na.rm=TRUE),length=9)
-spplot(cmap,"lwr50",at=brks,col.regions=rev(brewer.pal(9,"RdBu")),
+spplot(cmap,"lwr50",at=brks,col.regions=rev(brewer.pal(8,"RdBu")),
    main="Log Density Estimates, tau = .50")
 brks <- seq(min(cmap$lwr90,na.rm=TRUE),max(cmap$lwr90,na.rm=TRUE),length=9)
-spplot(cmap,"lwr90",at=brks,col.regions=rev(brewer.pal(9,"RdBu")),
+spplot(cmap,"lwr90",at=brks,col.regions=rev(brewer.pal(8,"RdBu")),
    main="Log Density Estimates, tau = .90")
 brks <- seq(min(cmap$lwr1090,na.rm=TRUE),max(cmap$lwr1090,na.rm=TRUE),length=9)
-spplot(cmap,"lwr1090",at=brks,col.regions=rev(brewer.pal(9,"RdBu")),
+spplot(cmap,"lwr1090",at=brks,col.regions=rev(brewer.pal(8,"RdBu")),
    main="Difference in Log Density, tau = .90 - .10")
 }
 }

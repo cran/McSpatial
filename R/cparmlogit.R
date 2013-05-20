@@ -1,6 +1,4 @@
-cparmlogit <- function(form,nonpar,window=.25,bandwidth=0,kern="tcub",distance="Mahal",alldata=FALSE,data=NULL) {
-  library(locfit)
-  library(akima)
+cparmlogit <- function(form,nonpar,window=.25,bandwidth=0,kern="tcub",distance="Mahal",target=NULL,data=NULL) {
 
   xmat <- model.frame(form,data=data)
   lvect <- levels(factor(xmat[,1]))
@@ -38,27 +36,18 @@ cparmlogit <- function(form,nonpar,window=.25,bandwidth=0,kern="tcub",distance="
   if (nz==1&bandwidth>0) {fit <- locfit(~lp(zmat[,1],h=2*bandwidth,deg=1),kern=kern) }
   if (nz==2&bandwidth>0) {fit <- locfit(~lp(zmat[,1],zmat[,2],h=2*bandwidth,deg=1),kern=kern) }
  
-  if (alldata==FALSE) {
-    zev <- lfeval(fit)$xev
-    nt = length(zev)/nz
-    target <- t(array(zev,dim=c(nz,nt)))
-    obs <- array(0,dim=nt)
-    for (i in seq(1:nt)) {
-      dist <- sqrt(mahalanobis(zmat, target[i,], vzmat))
-      obs[i] <- which.min(dist)
-    }
-    colnames(target) <- colnames(zmat)
-    obs <- sort(unique(c(obs,chull(zmat))))
-    nt = length(obs)
-    xvect <- as.matrix(xmat[obs,])
-    target <- as.matrix(zmat[obs,])
+  if (identical(target,NULL)){
+    target <- maketarget(nonpar,window=window,bandwidth=bandwidth,kern="tcub",data=data)$target
   }
-  if (alldata==TRUE) {
-    target <- as.matrix(zmat)
-    obs <- seq(1:n)
-    nt = n
-    xvect <- xmat
+  alldata = FALSE
+  if (identical(target,"alldata")){
+    target <- xmat
+    alldata = TRUE
   }
+  if (bandwidth>0){window = 0}
+  target <- as.matrix(target)
+  nt = nrow(target)
+
 
   if (distance=="Latlong"|distance=="L") {
     tvect <- attr(terms(nonpar),"term.labels")
@@ -178,17 +167,11 @@ cparmlogit <- function(form,nonpar,window=.25,bandwidth=0,kern="tcub",distance="
 
  }
 
-  hat1 <- function(x) {
-    if (nz==1) {hat <- aspline(target,x,zmat[,1])$y}
-    if (nz==2) {hat <- interpp(target[,1],target[,2], x, zmat[,1],zmat[,2],duplicate="mean")$z }
-    return(hat)
-  }
-  
   xcoef <- array(0,dim=c(n,nk*K))
   xcoef.se <- array(0,dim=c(n,nk*K))
   for (j in seq(1:ncol(xcoef))) {
-    xcoef[,j] <- hat1(xcoef.target[,j])
-    xcoef.se[,j] <- hat1(xcoef.target.se[,j])
+    xcoef[,j] <- smooth12(target,xcoef.target[,j],zmat)
+    xcoef.se[,j] <- smooth12(target,xcoef.target.se[,j],zmat)
   }
 
   pmat <- array(0,dim=c(n,K))

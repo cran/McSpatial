@@ -87,7 +87,7 @@ fit <- condens(ratio~price,contour=TRUE,level=TRUE,wire=TRUE,dens=TRUE,
 \details{
 The \emph{locfit} package is used to find the target values of \emph{x} for \emph{f(x)} and \emph{y} for \emph{f(y)}. 
 The \emph{expand.grid} command is then used to determine the target values of \emph{x} and \emph{y} for \emph{f(x,y)}.  
-The \emph{akima} package is used to interpolate \emph{f(x)}, \emph{f(y)}, and \emph{f(x,y)} to the 
+The \emph{smooth12} command is used to interpolate \emph{f(x)}, \emph{f(y)}, and \emph{f(x,y)} to the 
 full data set and to the grid of target values for the contour, level, and wire plots.
 
 The density functions \emph{f(x)} and \emph{f(y)} are as follows:

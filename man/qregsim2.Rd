@@ -148,7 +148,6 @@ McMillen, Daniel P., "Changes in the Distribution of House Prices over Time:  St
  }
 
 \examples{
-library(quantreg)
 par(ask=TRUE)
 
 n = 5000

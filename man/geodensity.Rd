@@ -12,7 +12,7 @@ geodensity(longvar,latvar,window=.25,kern="tcub",alldata=FALSE)
   \item{kern }{Kernel weighting functions.  Default is the tri-cube. Options include  "rect", "tria", "epan", "bisq", "tcub", and "trwt".}
   \item{alldata }{If \emph{alldata=T}, each observation is used as a target value for \emph{x}.  
 When \emph{alldata=F}, the function is estimated at a set of points chosen by the \emph{locfit} program using an adaptive decision tree approach, 
-and the \emph{akima} program is used to interpolate to the full set of observations.  
+and the \emph{smooth12} command is used to interpolate to the full set of observations.  
 Specifying \emph{alldata=T} can lead to long estimation times.}
 }
 
@@ -32,6 +32,7 @@ Specifying \emph{alldata=T} can lead to long estimation times.}
 
 
 \examples{
+\dontrun{
 library(spdep)
 library(RColorBrewer)
 cook <- readShapePoly(system.file("maps/CookCensusTracts.shp",package="McSpatial"))
@@ -44,7 +45,7 @@ cook$denshat <- fit$denshat
 brks <- seq(min(cook$denshat,na.rm=TRUE),max(cook$denshat,na.rm=TRUE),length=9)
 spplot(cook,"denshat",at=brks,col.regions=rev(brewer.pal(9,"RdBu")),
   main="Census Tract Densities")
-
+}
 }
 
 
@@ -72,7 +73,7 @@ Tri-Weight \tab ``trwt'' \tab \eqn{\frac{35}{32} (1-z^2)^3 * I(|z| <1)}{35/32 * 
 The gaussian kernel is not available.
 
 If \emph{alldata=T}, each data point in turn is used as a target point.
-If \emph{alldata=F}, \emph{locfit} is used to find a set of target points, and the \emph{akima} package is used to interpolate to the full set of observations.
+If \emph{alldata=F}, \emph{locfit} is used to find a set of target points, and the \emph{smooth12} command is used to interpolate to the full set of observations.
 The matrix of target coordinates is stored in \emph{target}, and the estimated densities at the target points are stored in \emph{dens.target}.  
 If \emph{alldata=T}, \emph{target} contains the full set of values for longitude and latitude, and \emph{dens.target} = \emph{denshat}.
 

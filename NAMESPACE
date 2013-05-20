@@ -3,7 +3,6 @@ exportPattern(".")
 
 # Import all packages listed as Imports or Depends
 import(
-  akima,
   lattice,
   locfit,
   quantreg,

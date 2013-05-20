@@ -1,4 +1,4 @@
-geodistance <- function(longvar,latvar,lotarget,latarget,dcoor=TRUE) {
+geodistance <- function(longvar,latvar,lotarget,latarget,dcoor=FALSE) {
 
   latvar <- 2*pi*latvar/360
   longvar <- 2*pi*longvar/360

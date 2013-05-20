@@ -1,7 +1,5 @@
 qregcpar <- function(form,nonpar,taumat=c(.10,.25,.50,.75,.90),window=.25,bandwidth=0,kern="tcub",
-  distance="Mahal",alldata=FALSE,data=NULL) {
-  library(locfit)
-  library(quantreg)
+  distance="Mahal",target=NULL,data=NULL) {
 
   mat <- model.frame(form,data=data)
   y <- mat[,1]
@@ -29,20 +27,18 @@ qregcpar <- function(form,nonpar,taumat=c(.10,.25,.50,.75,.90),window=.25,bandwi
 
   if (bandwidth>0) {window = 0}
 
-  if (nz==1&window>0)    {fit <- locfit(~lp(zmat[,1],nn=window,deg=1),kern=kern) }
-  if (nz==2&window>0)    {fit <- locfit(~lp(zmat[,1],zmat[,2],nn=window,deg=1),kern=kern) }
-  if (nz==1&bandwidth>0) {fit <- locfit(~lp(zmat[,1],h=2*bandwidth,deg=1),kern=kern) }
-  if (nz==2&bandwidth>0) {fit <- locfit(~lp(zmat[,1],zmat[,2],h=2*bandwidth,deg=1),kern=kern) }
- 
-  if (alldata==FALSE) {
-    zev <- lfeval(fit)$xev
-    nt = length(zev)/nz
-    target <- t(array(zev,dim=c(nz,nt)))
+  if (identical(target,NULL)){
+    target <- maketarget(nonpar,window=window,bandwidth=bandwidth,kern="tcub",data=data)$target
   }
-  if (alldata==TRUE) {
-    target <- as.matrix(zmat)
-    nt = n
+  alldata = FALSE
+  if (identical(target,"alldata")){
+    target <- xmat
+    alldata = TRUE
   }
+  if (bandwidth>0){window = 0}
+  target <- as.matrix(target)
+  nt = nrow(target)
+
 
   if (distance=="Latlong"|distance=="L") {
     tvect <- attr(terms(nonpar),"term.labels")
@@ -90,18 +86,13 @@ qregcpar <- function(form,nonpar,taumat=c(.10,.25,.50,.75,.90),window=.25,bandwi
     xcoef.se <- xcoef.target.se
   }
 
-  hat1 <- function(x) {
-    if (nz==1) {hat <- aspline(target,x,zmat[,1])$y}
-    if (nz==2) {hat <- interpp(target[,1],target[,2], x, zmat[,1],zmat[,2],duplicate="mean")$z }
-    return(hat)
-  }
   if (alldata==FALSE) {
     xcoef <-    array(0,dim=c(n,ntau,nk))
     xcoef.se <- array(0,dim=c(n,ntau,nk))
     for (itau in seq(1:ntau)) {
     for (j in seq(1:nk)) {
-      xcoef[,itau,j] <- hat1(xcoef.target[,itau,j])
-      xcoef.se[,itau,j] <- hat1(xcoef.target.se[,itau,j])
+      xcoef[,itau,j] <- smooth12(target,xcoef.target[,itau,j],zmat)
+      xcoef.se[,itau,j] <- smooth12(target,xcoef.target.se[,itau,j],zmat)
     }
     }
   }

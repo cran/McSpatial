@@ -7,7 +7,34 @@ gmmlogit <- function(form,inst=NULL,winst=NULL,wmat=NULL,shpfile,startb=NULL,sta
     wmat <- nb2mat(neighbors,zero.policy=TRUE)
   }
   xmat <- model.frame(form,data=data)
+
+  if (identical(data,NULL)) {
+    data <- model.frame(form)
+    xnames <- names(data)
+    if (!identical(inst,NULL)){
+      data1 <- model.frame(inst)
+      xnames1 <- names(data1)
+      newnames <- setdiff(xnames1,xnames)
+      if (length(newnames)>0) {
+        data <- cbind(data,data1[,newnames])
+        names(data) <- c(xnames,newnames)
+        xnames <- names(data)
+      }
+    }
+    if (!identical(winst,NULL)){
+      data1 <- model.frame(winst)
+      xnames1 <- names(data1)
+      newnames <- setdiff(xnames1,xnames)
+      if (length(newnames)>0) {
+        data <- cbind(data,data1[,newnames])
+        names(data) <- c(xnames,newnames)
+        xnames <- names(data)
+      }
+    }
+  }
+  xmat <- model.frame(form,data=data)
   y <- xmat[,1]
+
   xmat <- model.matrix(form,data=data)
   if (identical(inst,NULL)&identical(winst,NULL)) {zmat <- cbind(xmat, wmat%*%xmat[,-1])}
   if (identical(inst,NULL)&!identical(winst,NULL)) {zmat <- cbind(xmat, wmat%*%(model.matrix(winst,data=data)[,-1])) }
@@ -21,7 +48,6 @@ gmmlogit <- function(form,inst=NULL,winst=NULL,wmat=NULL,shpfile,startb=NULL,sta
   n = nrow(xmat)
   nk = ncol(xmat) 
   nk1 = nk+1
-
 
   block <- factor(blockid)
   for (i in levels(block)) {

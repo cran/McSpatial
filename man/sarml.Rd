@@ -62,7 +62,7 @@ and \eqn{V_{22} = Y'W'WY + \sigma^2 \sum_i \frac{eigvar_i}{(1 - \rho*eigvar_i)^2
   \item{beta }{The estimated vector of coefficients, \eqn{\beta}.}
   \item{rho }{The estimated value of \eqn{\rho}.}
   \item{sig2 }{The estimated error variance, \eqn{\sigma^2}.}
-  \item{vmat }{The covariance matrix for \eqn{(\beta, \sigma^2)}.}
+  \item{vmat }{The covariance matrix for \eqn{(\beta, \rho^2)}.}
   \item{eigvar }{The vector of eigenvalues}
 }
 

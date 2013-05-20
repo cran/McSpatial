@@ -8,7 +8,7 @@ Calls \emph{lwr} and returns its full output for the chosen value of \emph{h}.
 
 \usage{ 
 lwrgrid(form,window=0,bandwidth=0,kern="tcub",method="gcv",print=TRUE,
-  distance="Mahal",alldata=FALSE,data=NULL)
+  distance="Mahal",target=NULL,data=NULL)
 }
 
 \arguments{
@@ -22,9 +22,10 @@ lwrgrid(form,window=0,bandwidth=0,kern="tcub",method="gcv",print=TRUE,
 May be abbreviated to the first letter but must be capitalized.  
 Note:  \emph{lwr} looks for the first two letters to determine which variable is latitude and which is longitude, 
 so data set must be attached first or specified using the data option; options like data$latitude will not work.  Default:  Mahal. }
-  \item{alldata }{If \emph{alldata=T}, each observation is used as a target value for \emph{x}.  
-When \emph{alldata=F}, the function is estimated at a set of points chosen by the \emph{locfit} program using an adaptive decision tree approach, 
-and the \emph{akima} program is used to interpolate to the full set of observations.  Specifying \emph{alldata=T} can lead to long estimation times.}
+  \item{target}{If \emph{target = NULL}, uses the \emph{maketarget} command to form targets using \emph{alpha = window}.  
+In this case, the target points are found using a nearest neighbor procedure even if \emph{bandwidth} > 0. 
+If \emph{target="alldata"}, each observation is used as a target value for \emph{x}.  
+A set of target values can be supplied directly.}
   \item{data }{A data frame containing the data. Default:  use data in the current working directory}
 }
 
@@ -72,7 +73,11 @@ Silverman, A. W., \emph{Density Estimation for Statistics and Data Analysis}, Ch
 
 }
 
-\seealso{\link{lwr}}
+\seealso{
+  \link{lwr}
+
+  \link{maketarget}
+}
 
 \examples{
 par(ask=TRUE)

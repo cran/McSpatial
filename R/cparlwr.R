@@ -1,6 +1,4 @@
-cparlwr <- function(form,nonpar,window=.25,bandwidth=0,kern="tcub",distance="Mahal",alldata=FALSE,data=NULL) {
-  library(locfit)
-  library(akima)
+cparlwr <- function(form,nonpar,window=.25,bandwidth=0,kern="tcub",distance="Mahal",targetobs=NULL,data=NULL) {
 
   mat <- model.frame(form,data=data)
   y <- mat[,1]
@@ -27,34 +25,28 @@ cparlwr <- function(form,nonpar,window=.25,bandwidth=0,kern="tcub",distance="Mah
   if (kern=="trwt")  { wgt <- function(psi) { (1 - psi^2)^3 } }
   if (kern=="gauss") { wgt <- function(psi) { exp(-((2.5*psi)^2)/2) } }
 
-  if (bandwidth>0) {window = 0}
+  alldata = FALSE
+  ttype = "provided"
+  if (identical(targetobs,NULL)){ttype = "locfit"}
+  if (identical(targetobs,"alldata")){ttype = "alldata"}
 
-  if (nz==1&window>0)    {fit <- locfit(~lp(zmat[,1],nn=window,deg=1),kern=kern) }
-  if (nz==2&window>0)    {fit <- locfit(~lp(zmat[,1],zmat[,2],nn=window,deg=1),kern=kern) }
-  if (nz==1&bandwidth>0) {fit <- locfit(~lp(zmat[,1],h=2*bandwidth,deg=1),kern=kern) }
-  if (nz==2&bandwidth>0) {fit <- locfit(~lp(zmat[,1],zmat[,2],h=2*bandwidth,deg=1),kern=kern) }
- 
-  if (alldata==FALSE) {
-    zev <- lfeval(fit)$xev
-    nt = length(zev)/nz
-    target <- t(array(zev,dim=c(nz,nt)))
-    obs <- array(0,dim=nt)
-    for (i in seq(1:nt)) {
-      dist <- sqrt(mahalanobis(zmat, target[i,], vzmat))
-      obs[i] <- which.min(dist)
-    }
-    colnames(target) <- colnames(zmat)
-    obs <- sort(unique(c(obs,chull(zmat))))
-    nt = length(obs)
-    xvect <- as.matrix(xmat[obs,])
-    target <- as.matrix(zmat[obs,])
+  if (ttype=="provided"){
+    target <- zmat[targetobs,]
+    xvect <- xmat[targetobs,]
   }
-  if (alldata==TRUE) {
-    target <- as.matrix(zmat)
-    obs <- seq(1:n)
-    nt = n
+  if (ttype=="locfit"){
+    fit <- maketarget(nonpar, window=window, bandwidth=bandwidth, kern=kern, actualobs=TRUE, data=data)
+    target <- fit$target
+    xvect <- xmat[fit$obs,]
+    obs <- fit$obs
+  }
+  if (ttype=="alldata"){
+    target <- zmat
     xvect <- xmat
+    obs <- seq(1,n)
   }
+  target <- as.matrix(target)
+  nt = nrow(target)
 
   if (distance=="Latlong"|distance=="L") {
     tvect <- attr(terms(nonpar),"term.labels")
@@ -114,33 +106,13 @@ cparlwr <- function(form,nonpar,window=.25,bandwidth=0,kern="tcub",distance="Mah
   xcoef.se <- array(0,dim=c(n,nk))
 
   if (alldata==FALSE) {
-    if (nz==1) {
-      for (j in seq(1:nk)) {
-        hat <- aspline(target,xcoef.target[,j],zmat[,1])
-        xcoef[,j] <- hat$y
-        hat <- aspline(target,xcoef.target.se[,j],zmat[,1])
-        xcoef.se[,j] <- hat$y
-       }
-      hat <- aspline(target,df1target,zmat[,1])
-      infl <- hat$y
-      df1 = sum(hat$y)
-      hat <- aspline(target,df2target,zmat[,1])
-      df2 = sum(hat$y)
-    }
-    if (nz==2) {
-      for (j in seq(1:nk)) {
-        hat <- interpp(target[,1],target[,2],xcoef.target[,j], zmat[,1],zmat[,2],duplicate="mean")
-        xcoef[,j] <- hat$z
-        hat <- interpp(target[,1],target[,2],xcoef.target.se[,j],zmat[,1],zmat[,2],duplicate="mean")
-        xcoef.se[,j] <- hat$z
-       }
-      hat <- interpp(target[,1],target[,2],df1target, zmat[,1],zmat[,2],duplicate="mean")
-      infl <- hat$z
-      df1 = sum(hat$z)
-      hat <- interpp(target[,1],target[,2],df2target, zmat[,1],zmat[,2],duplicate="mean")
-      infl <- hat$z
-      df2 = sum(hat$z)
-    }
+    for (j in seq(1:nk)) {
+      xcoef[,j] <- smooth12(target,xcoef.target[,j],zmat)
+      xcoef.se[,j] <- smooth12(target,xcoef.target.se[,j],zmat)
+     }
+    infl <- smooth12(target,df1target,zmat)
+    df1 = sum(infl)
+    df2 <- sum(smooth12(target,df2target,zmat))
   }
 
   if (alldata==TRUE) {
@@ -171,9 +143,10 @@ cparlwr <- function(form,nonpar,window=.25,bandwidth=0,kern="tcub",distance="Mah
   colnames(xcoef.target.se) <- xname
   colnames(xcoef) <- xname
   colnames(xcoef.se) <- xname
+  ytarget <- yhat[obs]
 
-  out <- list(target,xcoef.target,xcoef.target.se,yhat,xcoef,xcoef.se,df1,df2,sig2,cv,gcv,infl)
-  names(out) <- c("target","xcoef.target","xcoef.target.se","yhat","xcoef","xcoef.se","df1","df2","sig2","cv","gcv","infl")
+  out <-      list(target,  ytarget,  xcoef.target,  xcoef.target.se,  yhat,  xcoef,  xcoef.se,  df1,  df2,  sig2,  cv,  gcv,  infl)
+  names(out) <- c("target","ytarget","xcoef.target","xcoef.target.se","yhat","xcoef","xcoef.se","df1","df2","sig2","cv","gcv","infl")
   return(out)   
   detach(data)
 }

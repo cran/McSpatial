@@ -10,24 +10,22 @@ Estimates a model of the form \emph{y = f(x)} using locally weighted regression.
 
 \usage{ 
 lwr(form,window=.25,bandwidth=0,kern="tcub",distance="Mahal",
-  alldata=FALSE,data=NULL)
+  target=NULL,data=NULL)
 }
 
 \arguments{
-  \item{form }{Model formula}
-  \item{window }{Window size.   Default:  0.25. }
-  \item{bandwidth }{
-Bandwidth.   Default: not used. }
-  \item{kern }{Kernel weighting function.  Default is the tri-cube. Options include  "rect", "tria", "epan", "bisq", "tcub", "trwt", and "gauss".}
-  \item{distance }{Options:  "Euclid", "Mahal", or "Latlong" for Euclidean, Mahalanobis, or "great-circle" geographic distance.   
+  \item{form}{Model formula}
+  \item{window}{Window size.   Default:  0.25.}
+  \item{bandwidth}{Bandwidth.   Default: not used.}
+  \item{kern}{Kernel weighting function.  Default is the tri-cube. Options include  "rect", "tria", "epan", "bisq", "tcub", "trwt", and "gauss".}
+  \item{distance}{Options:  "Euclid", "Mahal", or "Latlong" for Euclidean, Mahalanobis, or "great-circle" geographic distance.   
 May be abbreviated to the first letter but must be capitalized.  
 Note:  \emph{lwr} looks for the first two letters to determine which variable is latitude and which is longitude, 
 so the data set must be attached first or specified using the data option; options like data$latitude will not work.  
 Default:  Mahal. }
-  \item{alldata }{If \emph{alldata=T}, each observation is used as a target value for \emph{x}.  
-When \emph{alldata=F}, the function is estimated at a set of points chosen by the \emph{locfit} program using an adaptive decision tree approach, 
-and the \emph{akima} program is used to interpolate to the full set of observations.  
-Specifying \emph{alldata=T} can lead to long estimation times.}
+  \item{target}{If \emph{target = NULL}, uses the \emph{maketarget} command to form targets using the values specified for \emph{window}, 
+\emph{bandwidth}, and \emph{kern}.  If \emph{target="alldata"}, each observation is used as a target value for \emph{x}.  
+A set of target values can be supplied directly.}
   \item{data }{A data frame containing the data. Default:  use data in the current working directory.}
 }
 
@@ -80,7 +78,7 @@ The kernel weighting function becomes \emph{K(distance/h)} under the \emph{"Latl
 
 \emph{h} is specified by the bandwidth or window options.  
 The intercept, \eqn{\alpha}, provides an estimate of \emph{y} at \eqn{x_0}{x0} and \eqn{\beta} provides an estimate of the slope, \emph{dy/dx} at \eqn{x_0}{x0}.  
-When \emph{alldata=T}, each data point in turn is used as a target point, \eqn{x_0}{x0}.  
+When \emph{target="alldata"}, each data point in turn is used as a target point, \eqn{x_0}{x0}.  
 
 
 Since each estimate is a linear function of all \emph{n} values for \emph{y}, 
@@ -95,14 +93,13 @@ The estimated variance is \eqn{\hat{\sigma^2} = \sum_ie_i^2/(n-df)}{sig2 = sum(e
 where \eqn{Z = (1 \; x-x_0).}{Z = (1 x-x0).}  
 
 
-Estimation can be very slow when \emph{alldata=T}.  
-When \emph{alldata=F}, the package \emph{locfit} is used to find a good set of target points at which to evaluate the function.  
-See Loader (1999, section 12.2) for a description of the algorithm used to determine the target points.  
-The \emph{akima} package is then used to interpolate the coefficient estimates, the standard errors, and the values used to form \emph{df1} and \emph{df2}.  
+Estimation can be very slow when \emph{target = "alldata"}.  The \emph{maketarget} command can be used to identify target points. 
+The \emph{smooth12} command is then used to interpolate the coefficient estimates, the standard errors, 
+and the values used to form \emph{df1} and \emph{df2}.  
 
 
 \emph{h} can be specified to be either a fixed bandwidth or a window size set to a percentage of the sample size.  
-Optionally, the \emph{lwr_grid} command can be used to specify a vector of values for \emph{h} with \emph{lwr} picking the one that minimizes a criterion function.  
+Optionally, the \emph{lwrgrid} command can be used to specify a vector of values for \emph{h} with \emph{lwr} picking the one that minimizes a criterion function.  
 In general, the \emph{window} option will be preferable because it provides more accurate estimates in regions where \emph{x} is relatively sparse. 
 
 
@@ -147,6 +144,8 @@ Silverman, A. W., \emph{Density Estimation for Statistics and Data Analysis}, Ch
   \link{fourier}
 
   \link{lwrgrid}
+
+  \link{maketarget}
 
   \link{semip}
 }
@@ -199,8 +198,8 @@ lines(x, upper, lty="dashed", col="red")
 legend("topright", c("Base", "Predicted", "95 Percent CI"), 
  col=c("black", "red", "red"), lty=c("solid", "solid", "dashed"), lwd=1)
 
+\dontrun{
 #2. Population density data
-library(maptools)
 library(RColorBrewer)
 
 cook <- readShapePoly(system.file("maps/CookCensusTracts.shp",
@@ -226,6 +225,7 @@ brks <- seq(min(cook$lwrhat,na.rm=TRUE),max(cook$lwrhat,na.rm=TRUE),length=9)
 spplot(cook,"lwrhat",at=brks,col.regions=rev(brewer.pal(9,"RdBu")),
    main="Log Density LWR Estimates")
 
+}
 }
 
 \keyword{Locally Weighted Regression}

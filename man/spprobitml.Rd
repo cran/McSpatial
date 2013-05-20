@@ -2,16 +2,27 @@
 \alias{spprobitml }
 \title{Maximum Likelihood Estimation of a Spatial Probit Model}
 \description{Probit estimation for a model with an underlying latent variable of the form \eqn{Y^* = \rho WY^* + X \beta +u} }
-\usage{spprobitml(form,wmat,blockid=NULL,stdprobit=TRUE,data=NULL)}
+\usage{
+  spprobitml(form,wmat=NULL,shpfile=NULL,blockid=NULL,
+  minblock=NULL,maxblock=NULL,stdprobit=TRUE,data=NULL)
+}
 
 \arguments{
-  \item{form}{Model formula}
-  \item{wmat}{The spatial weight matrix.}
-  \item{blockid}{A variable identifying groups used to specify a block diagonal structure for the \emph{W} matrix, e.g., \emph{blockid=state} or \emph{blockid=region}.
-Imposes that all elements outside of the blocks equal zero and then re-standardizes \emph{W} such that the rows sum to one. 
-By default, \emph{blockid = 0}, and a block diagonal structure is \emph{not} imposed.}
+  \item{form }{Model formula}
+  \item{wmat}{Directly enter \emph{wmat} rather than creating it from a shape file.  Default:   not specified.  
+One of the \emph{wmat} or \emph{shpfile} options must be specified.}
+  \item{shpfile}{Shape file to be used for creating the \emph{W} matrix.  
+Default:   not specified.  One of the \emph{wmat} or \emph{shpfile} options must be specified.
+The order of the observations in \emph{wmat} must be the same as the order of observations in \emph{data}.}
+  \item{blockid}{A variable identifying groups used to specify a block diagonal structure for the \emph{W} matrix, 
+e.g., \emph{blockid=state} or \emph{blockid=region}.  Calculates a separate \emph{W} matrix for each block.  
+The \emph{shpfile} option must be specified; \emph{wmat} is ignored.}
+  \item{minblock}{Groups with fewer than \emph{minblock} observations are omitted.  Default is the number of explanatory variables, including the spatial lag term.}
+ \item{maxblock}{Groups with more than \emph{maxblock} observations are omitted.  Unlimited by default.  This option may be useful for very large
+data sets as full nblock x nblock matrices must be constructed for each block, where nblock is the number of observations in the block.}
   \item{stdprobit}{If \emph{TRUE}, also prints standard probit model results.  Default:  \emph{stdprobit=TRUE}.}
   \item{data}{A data frame containing the data. Default:  use data in the current working directory}
+
 }
 
 \value{
@@ -49,9 +60,9 @@ Estimation can be very slow because each iteration requires the inversion of an 
 To speed up the estimation process and to reduce memory requirements, it may be desirable to impose a block diagonal structure on \emph{W}.  
 For example, it may be reasonable to impose that each state or region has its own error structure, with no correlation of errors across regions.  
 The \emph{blockid} option specifies a block diagonal structure such as \emph{blockid=region}.  
-The option leads the program to re-calculate the \emph{W} matrix, imposing the block diagonal structure and re-normalizing the matrix to again have each row sum to one.  
 If there are \emph{G} groups, estimation requires \emph{G} sub-matrices to be inverted rather than one \emph{nxn} matrix, 
 which greatly reduces memory requirements and significantly reduces the time required in estimation. 
+The weight matrix must be calculated from \emph{shpfile} if the \emph{blockid} option is specified; the \emph{wmat} option should be set to \emph{NULL}.
 }
 
 \references{
@@ -62,13 +73,12 @@ McMillen, Daniel P., "Probit With Spatial Autocorrelation," \emph{Journal of Reg
 
 \examples{
 set.seed(9947)
-library(maptools)
 cmap <- readShapePoly(system.file("maps/CookCensusTracts.shp",
   package="McSpatial"))
 cmap <- cmap[cmap$CHICAGO==1&cmap$CAREA!="O'Hare",]
 lmat <- coordinates(cmap)
 dnorth <- geodistance(lmat[,1],lmat[,2], lotarget=-87.627800, 
-	latarget=41.881998)$dnorth
+	latarget=41.881998,dcoor=TRUE)$dnorth
 cmap <- cmap[dnorth>1,]
 wmat <- makew(cmap)$wmat
 n = nrow(wmat)

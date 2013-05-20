@@ -41,10 +41,10 @@ geoshape <- function(longvar,latvar,linefile=NULL,pointfile=NULL,coormatrix=NULL
   la2 <- bmat[,2]
   lobar = mean(lo1)
   labar = mean(la1)
-  fit <- geodistance(lo1,la1,lobar,labar)
+  fit <- geodistance(lo1,la1,lobar,labar,dcoor=TRUE)
   dnorth1 <- fit$dnorth
   deast1 <- fit$deast
-  fit <- geodistance(lo2,la2,lobar,labar)
+  fit <- geodistance(lo2,la2,lobar,labar,dcoor=TRUE)
   dnorth2 <- fit$dnorth
   deast2 <- fit$deast
   xlim = c(min(deast1,deast2),max(deast1,deast2))

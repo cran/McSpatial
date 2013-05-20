@@ -1,12 +1,12 @@
-lwr <- function(form,window=.25,bandwidth=0,kern="tcub",distance="Mahal",alldata=FALSE,data=NULL) {
-  library(locfit)
-  library(akima)
+lwr <- function(form,window=.25,bandwidth=0,kern="tcub",distance="Mahal",target=NULL,data=NULL) {
+
   form <- as.formula(form,env=data)
 
   mat <- model.frame(form,data=data)
   y <- mat[,1]
   n = length(y)
-  xmat <- as.matrix(model.matrix(form,data=data)[,-1])
+  xmat <- model.matrix(form,data=data)
+  xmat <- as.matrix(xmat[,-1])
   nk = ncol(xmat)
   if (nk==1) {vxmat <- var(xmat) }
   if (nk==2) {
@@ -22,21 +22,17 @@ lwr <- function(form,window=.25,bandwidth=0,kern="tcub",distance="Mahal",alldata
   if (kern=="trwt")  { wgt <- function(psi) { (1 - psi^2)^3 } }
   if (kern=="gauss") { wgt <- function(psi) { exp(-((2.5*psi)^2)/2) } }
 
-  if (bandwidth>0) {window = 0}
-
-  if (alldata==FALSE) {
-    if (nk==1&window>0)    {fit <- locfit(~lp(xmat[,1],nn=window,deg=1)) }
-    if (nk==2&window>0)    {fit <- locfit(~lp(xmat[,1],xmat[,2],nn=window,deg=1)) }
-    if (nk==1&bandwidth>0) {fit <- locfit(~lp(xmat[,1],h=2*bandwidth,deg=1)) }
-    if (nk==2&bandwidth>0) {fit <- locfit(~lp(xmat[,1],xmat[,2],h=2*bandwidth,deg=1)) }
-    xev <- lfeval(fit)$xev
-    nt = length(xev)/nk
-    target <- t(array(xev,dim=c(nk,nt)))
+  if (identical(target,NULL)){
+    target <- maketarget(form,window=window,bandwidth=bandwidth,kern="tcub",data=data)$target
   }
-  if (alldata==TRUE) {
+  alldata = FALSE
+  if (identical(target,"alldata")){
     target <- xmat
-    nt = n 
+    alldata = TRUE
   }
+  if (bandwidth>0){window = 0}
+  target <- as.matrix(target)
+  nt = nrow(target)
   
   ytarget     <- array(0,dim=nt)
   ytarget.se  <- array(0,dim=nt)
@@ -96,52 +92,22 @@ lwr <- function(form,window=.25,bandwidth=0,kern="tcub",distance="Mahal",alldata
     if (nk==2) {dtarget2.se[i] = sqrt(vmat[3,3]) }
   }
 
-  if (nk==1&alldata==FALSE) {
-    x <- xmat[,1]
-    hat <- aspline(target,ytarget,x)
-    yhat <- hat$y
-    hat <- aspline(target,dtarget1,x)
-    dhat1 <- hat$y
-    hat <- aspline(target,df1target,x)
-    infl <- hat$y
-    df1 = sum(infl)
-    hat <- aspline(target,df2target,x)
-    df2 = sum(hat$y)
-    hat <- aspline(target,ytarget.se,x)
-    yhat.se <- hat$y
-    hat <- aspline(target,dtarget1.se,x)
-    dhat1.se <- hat$y
+  if (alldata==FALSE) {
+    yhat <- smooth12(target,ytarget,xmat)
+    dhat1 <- smooth12(target,dtarget1,xmat)
+    infl <- smooth12(target,df1target,xmat)
+    df1 <- sum(infl)
+    df2 <- sum(smooth12(target,df2target,xmat))
+    yhat.se <- smooth12(target,ytarget.se,xmat)
+    dhat1.se <- smooth12(target,dtarget1.se,xmat)
     dhat2 <- NULL
     dhat2.se <- NULL
+    if (nk==2){
+      dhat2 <- smooth12(target,dtarget2,xmat)
+      dhat2.se <- smooth12(target,dtarget2.se,xmat)
+    }
   }
-
-  if (nk==2&alldata==FALSE) {
-    hat <- interpp(target[,1],target[,2],ytarget,     xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-    yhat <- hat$z
-
-    hat <- interpp(target[,1],target[,2],dtarget1,    xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-    dhat1 <- hat$z
- 
-    hat <- interpp(target[,1],target[,2],dtarget2,    xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-    dhat2 <- hat$z
-
-    hat <- interpp(target[,1],target[,2],df1target,   xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-    infl <- hat$z
-    df1 = sum(infl)
-
-    hat <- interpp(target[,1],target[,2],df2target,   xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-    df2 = sum(hat$z)
-
-    hat <- interpp(target[,1],target[,2],ytarget.se,  xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-    yhat.se <- hat$z
-
-    hat <- interpp(target[,1],target[,2],dtarget1.se, xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-    dhat1.se <- hat$z
-
-    hat <- interpp(target[,1],target[,2],dtarget2.se, xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-    dhat2.se <- hat$z
-  }
-
+    
   if (alldata==TRUE) {
     yhat <- ytarget
     dhat1 <- dtarget1

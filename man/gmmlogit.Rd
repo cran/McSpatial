@@ -25,7 +25,7 @@ Specified as \emph{startrho=0.}}
 Imposes that all elements outside of the blocks equal zero and then re-standardizes \emph{W} such that the rows sum to one. 
 By default, \emph{blockid = 0}, and a block diagonal structure is \emph{not} imposed.}
   \item{cvcrit}{Convergence criterion.  Default:  \emph{cvcrit} = 0.0001.}
-  \item{data }{A data frame containing the data. Default:  use data in the current working directory}
+  \item{data }{A data frame containing the data. Default:  use data in the current working directory.}
   \item{silent }{If \emph{silent=T}, no output is printed}
 }
 

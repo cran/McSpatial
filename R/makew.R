@@ -24,7 +24,7 @@ makew <- function(shpfile=NULL,coormat=NULL,method="queen",
   if (method=="ring") {
     for (i in seq(2,n)) {
       ni = i-1
-      dist <- geodistance(longvar=coormat[1:ni,1],latvar=coormat[1:ni,2],lotarget=coormat[i,1],latarget=coormat[i,2],dcoor=FALSE)$dist
+      dist <- geodistance(longvar=coormat[1:ni,1],latvar=coormat[1:ni,2],lotarget=coormat[i,1],latarget=coormat[i,2])$dist
       wmat[i,1:ni] <- ifelse(dist<=ringdist,1,0)
     }
     wmat[upper.tri(wmat)] <- t(wmat)[upper.tri(wmat)]
@@ -39,7 +39,7 @@ makew <- function(shpfile=NULL,coormat=NULL,method="queen",
 
   if (method=="kernel") {
     for (i in seq(1,n)) {
-      dist <- geodistance(longvar=coormat[,1],latvar=coormat[,2],lotarget=coormat[i,1],latarget=coormat[i,2],dcoor=FALSE)$dist
+      dist <- geodistance(longvar=coormat[,1],latvar=coormat[,2],lotarget=coormat[i,1],latarget=coormat[i,2])$dist
       h <- quantile(dist,window)
       wmat[i,] <- ifelse(dist<=h,wgt(dist/h)/h,0)
     }

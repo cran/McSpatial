@@ -56,7 +56,7 @@ associated with \eqn{y_k}{yk}, k = 1,...,ny.  Finally, let \eqn{\tau}{tau} repre
 Then the value of \emph{yhat.target} associated with quantile \eqn{\tau}{tau}
 and \eqn{x_j}{xj} is the largest value of \eqn{f_k}{fk} such that \eqn{f_k < \tau < f_k+1}{fk < tau < fk+1}.  
 The resulting \emph{nx x length(taumat)} matrix is available after estimation as \emph{yhat.target}.  
-The package \emph{akima} is used to interpolate each column of \emph{yhat.target} to span the full vector of original values of \emph{x}.  
+The \emph{smooth12} is used to interpolate each column of \emph{yhat.target} to span the full vector of original values of \emph{x}.  
 The result is the \emph{n x length(taumat)} matrix \emph{yhat}.
 
 Note:  The default bandwidth may prove too small if there are regions where \emph{x} is sparse.  

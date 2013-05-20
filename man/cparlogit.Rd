@@ -9,7 +9,7 @@ Conditionally Parametric logit for two or more choices
 
 \usage{ 
 cparlogit(form,nonpar,window=.25,bandwidth=0,kern="tcub",
-distance="Mahal",alldata=FALSE,data=NULL)  
+distance="Mahal",target=NULL,data=NULL,minp=NULL)  
 }
 
 \arguments{
@@ -25,10 +25,14 @@ Important:  note the "~" before the first \emph{z} variable.
 May be abbreviated to the first letter but must be capitalized.  
 Note:  \emph{cparlogit} looks for the first two letters to determine which variable is latitude and which is longitude, 
 so the data set must be attached first or specified using the data option; options like data$latitude will not work.  Default:  Mahal. }
-  \item{alldata }{If \emph{alldata=T}, each observation is used as a target value for \emph{z}.  
-When \emph{alldata=F}, the function is estimated at a set of points chosen by the \emph{locfit} program using an adaptive decision tree approach, 
-and the \emph{akima} program is used to interpolate to the full set of observations.  Specifying \emph{alldata=T} can lead to long estimation times.}
+
+  \item{target}{If \emph{target = NULL}, uses the \emph{maketarget} command to form targets using the values specified for \emph{window}, 
+\emph{bandwidth}, and \emph{kern}.  If \emph{target="alldata"}, each observation is used as a target value for \emph{x}.  
+A set of target values can be supplied directly.}
+
   \item{data }{A data frame containing the data. Default:  use data in the current working directory}
+  \item{minp}{Specifies a limit for the estimated probability.  Any estimated probability lower than \emph{minp} will be set to \emph{minp} and
+any probability higher than 1-\emph{minp} will be set to 1-\emph{minp}.  By default, the estimated probabilities are bounded by 0 and 1.}
 }
 
 \value{
@@ -81,11 +85,6 @@ For the logit model,
 
 The covariance matrix is calculated at all target points and the implied standard errors are then interpolated to each data point.
 
-Estimation can be very slow when \emph{alldata=T} or when the number of choices is large.  
-When \emph{alldata=F}, the package \emph{locfit} is used to find a good set of target points at which to evaluate the function.  
-See Loader (1999, section 12.2) for a description of the algorithm used to determine the target points.  
-The \emph{akima} package is then used to interpolate the coefficient estimates and standard errors. 
-
 Available kernel weighting functions include the following: 
 
 \tabular{lll}{
@@ -132,54 +131,15 @@ Tibshirani, Robert and Trevor Hastie, "Local Likelihood Estimation," \emph{Journ
 }
 
 \examples{
-
 set.seed(5647)
-n = 1000
-x <- runif(n,0,pi*sqrt(12))
-o <- order(x)
-x <- x[o]
-form <- yvar~x
-nonpar <- ~x
-par(ask=TRUE)
+data(cookdata)
+cookdata <- cookdata[!is.na(cookdata$AGE),]
+n = nrow(cookdata)
+cookdata$ystar <- cookdata$DCBD - .5*cookdata$AGE
+cookdata$y <- cookdata$ystar - mean(cookdata$ystar) + rnorm(n,sd=4) > 0
 
-# Linear
-ybase <- x + rlogis(n)
-yvar <- ybase>.5*pi*sqrt(12)
-table(yvar)
-fit <- glm(yvar~x,family=binomial(link="logit"))
-summary(fit)
-p <- fitted(fit)
-fit1 <- cparlogit(yvar~x,nonpar=~x,kern="rect")
-colMeans(fit1$xcoef)
-colMeans(fit1$xcoef.se)
-cor(p,fit1$p)
-ymin = min(p,fit1$p)
-ymax = max(p,fit1$p)
-plot(x,p,xlab="x",ylab="Prob(y=1)",type="l",ylim=c(ymin,ymax))
-lines(x,fit1$p,col="red")
-legend("topleft",c("Standard Logit","CPAR"),col=c("black","red"),lwd=1)
-
-
-
-# Quadratic
-x2 <- x^2
-ybase <- x - .1*(x^2) + rlogis(n)
-yvar <- ybase>median(ybase)
-table(yvar)
-fit <- glm(yvar~x+x2,family=binomial(link="logit"))
-summary(fit)
-p <- fitted(fit)
-fit1 <- cparlogit(yvar~x,nonpar=~x,window=.30,kern="rect")
-colMeans(fit1$xcoef)
-colMeans(fit1$xcoef.se)
-cor(p,fit1$p)
-ymin = min(p,fit1$p)
-ymax = max(p,fit1$p)
-plot(x,p,xlab="x",ylab="Prob(y=1)",type="l",ylim=c(ymin,ymax))
-lines(x,fit1$p,col="red")
-legend("bottom",c("Standard Logit","CPAR"),col=c("black","red"),lwd=1)
-
-
+fit  <- cparlogit(y~DCBD+AGE,~LONGITUDE+LATITUDE,window=.5,
+  distance="Latlong",data=cookdata,minp=0.001)
 }
 
 

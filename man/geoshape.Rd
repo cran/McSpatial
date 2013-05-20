@@ -36,7 +36,6 @@ the first column is longitude, and the second is latitude.
 
 
 \examples{
-library(maptools)
 data(matchdata)
 cmap <- readShapePoly(system.file("maps/CookCensusTracts.shp",
   package="McSpatial"))

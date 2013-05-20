@@ -1,5 +1,5 @@
 geogravity <- function(x,longvar,latvar,alpha=1,maxd=NULL,alldata=FALSE,window=.10,outmatrix=FALSE) {
-  library(locfit)
+
   latvar  <- 2*pi*latvar/360
   longvar <- 2*pi*longvar/360
 
@@ -11,7 +11,7 @@ geogravity <- function(x,longvar,latvar,alpha=1,maxd=NULL,alldata=FALSE,window=.
     target <- t(array(zev,dim=c(2,nt)))
     obs <- array(0,dim=nt)
     for (i in seq(1:nt)) {
-      dist <- geodistance(longvar,latvar,target[i,1],target[i,2],dcoor=FALSE)$dist 
+      dist <- geodistance(longvar,latvar,target[i,1],target[i,2])$dist 
       obs[i] <- which.min(dist)
     }
     targetobs <- sort(unique(c(obs,chull(cbind(longvar,latvar)))))
@@ -24,7 +24,7 @@ geogravity <- function(x,longvar,latvar,alpha=1,maxd=NULL,alldata=FALSE,window=.
 
   for (i in seq(1,nt)) {
     ii = targetobs[i]
-    dist <- geodistance(longvar,latvar,longvar[ii],latvar[ii],dcoor=FALSE)$dist
+    dist <- geodistance(longvar,latvar,longvar[ii],latvar[ii])$dist
     if (identical(maxd,NULL)) {dist <- x[ii]*x/(dist^alpha)}
     if (!identical(maxd,NULL)) {dist <- ifelse(dist<=maxd,  x[ii]*x/(dist^alpha), 0)}
     gtarget[i] = mean(dist[-ii],na.rm=TRUE)
@@ -34,7 +34,8 @@ geogravity <- function(x,longvar,latvar,alpha=1,maxd=NULL,alldata=FALSE,window=.
 
   gravity <- gtarget
   if (alldata==FALSE) {
-    gravity <- interpp(longvar[targetobs],latvar[targetobs],gtarget, longvar,latvar,duplicate="mean")$z
+    lmat <- cbind(longvar,latvar)
+    gravity <- smooth12(lmat[targetobs,],gtarget, lmat)
   }
     
   out <- list(targetobs,gravity,dmat)

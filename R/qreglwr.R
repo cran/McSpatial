@@ -1,8 +1,6 @@
-qreglwr <- function(form,taumat=c(.10,.25,.50,.75,.90),window=.25,bandwidth=0,kern="tcub",distance="Mahal",alldata=FALSE,data=NULL) {
+qreglwr <- function(form,taumat=c(.10,.25,.50,.75,.90),window=.25,bandwidth=0,kern="tcub",distance="Mahal",target=NULL,data=NULL) {
   ntau = length(taumat)
 
-  library(locfit)
-  library(quantreg)
   mat <- model.frame(form,data=data)
   y <- mat[,1]
   n = length(y)
@@ -24,19 +22,18 @@ qreglwr <- function(form,taumat=c(.10,.25,.50,.75,.90),window=.25,bandwidth=0,ke
 
   if (bandwidth>0) {window = 0}
 
-  if (alldata==FALSE) {
-    if (nk==1&window>0)    {fit <- locfit(~lp(xmat[,1],nn=window,deg=1)) }
-    if (nk==2&window>0)    {fit <- locfit(~lp(xmat[,1],xmat[,2],nn=window,deg=1)) }
-    if (nk==1&bandwidth>0) {fit <- locfit(~lp(xmat[,1],h=2*bandwidth,deg=1)) }
-    if (nk==2&bandwidth>0) {fit <- locfit(~lp(xmat[,1],xmat[,2],h=2*bandwidth,deg=1)) }
-    xev <- lfeval(fit)$xev
-    nt = length(xev)/nk
-    target <- t(array(xev,dim=c(nk,nt)))
+  if (identical(target,NULL)){
+    target <- maketarget(form,window=window,bandwidth=bandwidth,kern="tcub",data=data)$target
   }
-  if (alldata==TRUE) {
+  alldata = FALSE
+  if (identical(target,"alldata")){
     target <- xmat
-    nt = n 
+    alldata = TRUE
   }
+  if (bandwidth>0){window = 0}
+  target <- as.matrix(target)
+  nt = nrow(target)
+
   
   if (distance=="Latlong"|distance=="L") {
     tvect <- attr(terms(form),"term.labels")
@@ -100,45 +97,16 @@ qreglwr <- function(form,taumat=c(.10,.25,.50,.75,.90),window=.25,bandwidth=0,ke
     }
   }
 
-  if (nk==1&alldata==FALSE) {
-    x <- xmat[,1]
+  if (alldata==FALSE) {
     for (j in seq(1:ntau)) {
-      hat <- aspline(target,ytarget[,j],x)
-      yhat[,j] <- hat$y
-
-      hat <- aspline(target,dtarget1[,j],x)
-      dhat1[,j] <- hat$y
-
-      hat <- aspline(target,ytarget.se[,j],x)
-      yhat.se[,j] <- hat$y
-
-      hat <- aspline(target,dtarget1.se[,j],x)
-      dhat1.se[,j] <- hat$y
-
+      yhat[,j] <- smooth12(target,ytarget[,j],xmat)
+      dhat1[,j] <- smooth12(target,dtarget1[,j],xmat)
       dhat2[,j] <- 0
+      if (nk==2){dhat2[,j] <- smooth12(target,dtarget2[,j],xmat)}
+      yhat.se[,j] <- smooth12(target,ytarget.se[,j],xmat)
+      dhat1.se[,j] <- smooth12(target,ytarget.se[,j],xmat)
       dhat2.se[,j] <- 0
-    }
-  }
-
-  if (nk==2&alldata==FALSE) {
-    for (j in seq(1:ntau)) {
-      hat <- interpp(target[,1],target[,2],ytarget[,j],     xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-      yhat[,j] <- hat$z
-
-      hat <- interpp(target[,1],target[,2],dtarget1[,j],    xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-      dhat1[,j] <- hat$z
- 
-      hat <- interpp(target[,1],target[,2],dtarget2[,j],    xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-      dhat2[,j] <- hat$z
-
-      hat <- interpp(target[,1],target[,2],ytarget.se[,j],  xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-      yhat.se[,j] <- hat$z
-
-      hat <- interpp(target[,1],target[,2],dtarget1.se[,j], xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-      dhat1.se[,j] <- hat$z
-
-      hat <- interpp(target[,1],target[,2],dtarget2.se[,j], xmat[,1],xmat[,2],linear=FALSE,extrap=TRUE,duplicate="mean")
-      dhat2.se[,j] <- hat$z
+      if (nk==2){dhat2.se[,j] <- smooth12(target,dtarget2.se[,j],xmat)}
     }
   }
 

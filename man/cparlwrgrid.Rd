@@ -9,7 +9,7 @@ Calls \emph{cparlwr} and returns its full output for the chosen value of \emph{h
 }
 \usage{ 
 cparlwrgrid(form,nonpar,window=0,bandwidth=0,kern="tcub",method="gcv",
-  print=TRUE,distance="Mahal",alldata=FALSE,data=NULL)
+  print=TRUE,distance="Mahal",targetobs=NULL,data=NULL)
 }
 
 \arguments{
@@ -27,9 +27,10 @@ Important:  note the "~" before the first \emph{z} variable.
 May be abbreviated to the first letter but must be capitalized.  
 Note:  \emph{cparlwr} looks for the first two letters to determine which variable is latitude and which is longitude, 
 so the data set must be attached first or specified using the data option; options like data$latitude will not work.  Default:  Mahal. }
-  \item{alldata }{If \emph{alldata=T}, each observation is used as a target value for \emph{z}.  
-When \emph{alldata=F}, the function is estimated at a set of points chosen by the \emph{locfit} program using an adaptive decision tree approach, 
-and the \emph{akima} program is used to interpolate to the full set of observations.  Specifying \emph{alldata=T} can lead to long estimation times.}
+  \item{targetobs}{If \emph{targetobs = NULL}, uses the \emph{maketarget} command to form targets.  
+If \emph{target="alldata"}, each observation is used as a target value for \emph{x}.  
+A set of target can also be supplied directly by listing the observation numbers of the target data points.  The observation numbers can be
+identified using the \emph{obs} variable produced by the \emph{maketarget} command.}
   \item{data }{A data frame containing the data. Default:  use data in the current working directory}
 }
 
@@ -37,11 +38,9 @@ and the \emph{akima} program is used to interpolate to the full set of observati
   \item{target}{The target points for the original estimation of the function.}
   \item{ytarget}{The predicted values of \emph{y} at the target values \emph{z}.}
   \item{xcoef.target}{Estimated coefficients, \emph{B(z)}, at the target values of \emph{z}.}
-  \item{ytarget.se}{Standard errors for the predicted \emph{y} at the target values of \emph{z}.}
   \item{xcoef.target.se}{Standard errors for \emph{B(z)} at the target values of \emph{z}.}
   \item{yhat}{Predicted values of \emph{y} at the original data points.}
   \item{xcoef}{Estimated coefficients, \emph{B(z)}, at the original data points.}
-  \item{yhat.se}{Standard errors for the predicted values of \emph{y}, full data set.}
   \item{xcoef.se}{Standard errors for \emph{B(z)} with \emph{z} evaluated at all points in the data set.}
   \item{df1}{\emph{tr(L)}, a measure of the degrees of freedom used in estimation.}
   \item{df2}{\emph{tr(L'L)}, an alternative measure of the degrees of freedom used in estimation.  }

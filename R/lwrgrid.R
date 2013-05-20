@@ -1,4 +1,4 @@
-lwrgrid <- function(form,window=0,bandwidth=0,kern="tcub",method="gcv",print=TRUE,distance="Mahal",alldata=FALSE,data=NULL) {
+lwrgrid <- function(form,window=0,bandwidth=0,kern="tcub",method="gcv",print=TRUE,distance="Mahal",target=NULL,data=NULL) {
 
   nw = length(window)
   nb = length(bandwidth)
@@ -11,7 +11,7 @@ lwrgrid <- function(form,window=0,bandwidth=0,kern="tcub",method="gcv",print=TRU
 
   if (nw>1) {
     for (iw in window) {
-      fit1 <- lwr(form,window=iw,bandwidth=0,kern=kern,distance=distance,alldata=alldata,data=data)
+      fit1 <- lwr(form,window=iw,bandwidth=0,kern=kern,distance=distance,target=target,data=data)
       hval = ifelse(icross==TRUE,fit1$cv,fit1$gcv)
       if (print==TRUE) {print(c(iw,hval))}
       if (hval<minval) {
@@ -24,7 +24,7 @@ lwrgrid <- function(form,window=0,bandwidth=0,kern="tcub",method="gcv",print=TRU
 
   if (nb>1) {
     for (ib in bandwidth) {
-      fit1 <- lwr(form,window=0,bandwidth=ib,kern=kern,distance=distance,alldata=alldata,data=data)
+      fit1 <- lwr(form,window=0,bandwidth=ib,kern=kern,distance=distance,target=target,data=data)
       hval = ifelse(icross==TRUE,fit1$cv,fit1$gcv)
       if (print==TRUE) {print(c(ib,hval))}
       if (hval<minval) {

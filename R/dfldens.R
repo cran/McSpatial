@@ -1,7 +1,5 @@
 dfldens <- function(y,lgtform,window=0,bandwidth=0,kern="tcub",probit=FALSE,graph=TRUE,yname="y",alldata=FALSE,data=NULL) {
 
-  library(locfit)
-
   xmat <- model.frame(lgtform,data=data)
   datevar <- xmat[,1]
   n = length(datevar)
@@ -50,8 +48,8 @@ dfldens <- function(y,lgtform,window=0,bandwidth=0,kern="tcub",probit=FALSE,grap
     dhat10 <- dtarget10
   }
   if (alldata==FALSE) {
-    dhat1 <- aspline(target,dtarget1,y1)$y
-    dhat10 <- aspline(target,dtarget10,y1)$y
+    dhat1 <- smooth12(target,dtarget1,y1)
+    dhat10 <- smooth12(target,dtarget10,y1)
   }
  
   if (graph==TRUE) {

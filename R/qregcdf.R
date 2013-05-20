@@ -62,11 +62,10 @@ qregcdf <- function(form,taumat=c(.10,.25,.50,.75,.90),hx=0,hy=0,nx=20,ny=100,ta
     }
   }
 
-  library(akima)
   n = length(y)
   yhatmat <- array(0,dim=c(n,ntau))
   for (j in seq(1,ntau)) {
-    yhatmat[,j] <- aspline(targetx,yhatmat.target[,j],x)$y
+    yhatmat[,j] <- smooth12(targetx,yhatmat.target[,j],x)
   }
   if (graph.yhat==TRUE) {
     plot(x,yhatmat[,1],type="l",xlab=xname,ylab=yname,main="Predicted Values",ylim=c(ymin,ymax))

@@ -38,7 +38,7 @@ longitude <- lmat[,1]
 latitude  <- lmat[,2]
 fit <- geogravity(cook$lndens,longitude,latitude)
 cook$gravity <- fit$gravity
-mapplot(cook,"gravity")
+
 }
 
 \seealso{
@@ -61,7 +61,7 @@ The "gravity variable" that is stored in \emph{gravity} is the average value for
 
 By default, the \emph{locfit} program is used to find a set of target values for calculating \eqn{ g_{ij}}.
 The full set of observations is used for the \emph{j} index, but a smaller set of observations is used for the target values, \emph{i}.
-The abbreviated set of \eqn{g_i} values is then interpolated to the full set of data points using the \emph{akima} package.
+The abbreviated set of \eqn{g_i} values is then interpolated to the full set of data points using the \emph{smooth12} command.
 The vector of target observation numbers is stored in \emph{targetobs}. 
 
 }

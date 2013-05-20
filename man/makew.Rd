@@ -49,7 +49,6 @@ Eigenvalues are returned if the \emph{eigenvalues=T} is specified.
 
 
 \examples{
-library(maptools)
 cmap <- readShapePoly(system.file("maps/CookCensusTracts.shp",
   package="McSpatial"))
 cmap <- cmap[cmap$POPULATION>0&cmap$AREA>0,]

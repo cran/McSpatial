@@ -28,11 +28,10 @@ It is identified in the variable \emph{CAREA}.}
 Daniel McMillen.  Data are drawn from the U.S. Census and the Cook County Assessment File.
 }
 \examples{
-library(maptools)
 cook <- readShapePoly(system.file("maps/CookCensusTracts.shp",
   package="McSpatial"))
 sampvar <- cook$CHICAGO==1|(!is.na(cook$CAREA)&cook$CAREA=="O'Hare")
-cook <- cook[sampvar==TRUE,]
+chicago <- cook[sampvar==TRUE,]
 
 }
 \keyword{Datasets}

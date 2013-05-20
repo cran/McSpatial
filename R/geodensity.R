@@ -1,6 +1,4 @@
 geodensity <- function(longvar,latvar,window=.25,kern="tcub",alldata=FALSE) {
-  library(locfit)
-  library(akima)
 
   if (kern=="rect")  { wgt <- function(psi) {ifelse(abs(psi)>=0,.5,0) } }
   if (kern=="tria")  { wgt <- function(psi) {1 - abs(psi) } }
@@ -34,7 +32,7 @@ geodensity <- function(longvar,latvar,window=.25,kern="tcub",alldata=FALSE) {
   }
 
   if (alldata==FALSE) {
-    denshat <- interpp(target[,1], target[,2], dens.target, longvar, latvar, linear=FALSE, extrap=TRUE, duplicate="mean")$z
+    denshat <- smooth12(target,dens.target,cbind(longvar,latvar))
   }
   if (alldata==TRUE) {denshat <- dens.target}
 

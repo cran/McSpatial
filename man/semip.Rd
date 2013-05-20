@@ -7,7 +7,7 @@ where f(z) is either fully nonparametric with \eqn{f(z) = f(z_1)} or conditional
 
 \usage{ 
 semip(form,nonpar,conpar,window1=.25,window2=.25,bandwidth1=0,bandwidth2=0, 
- kern="tcub",distance="Mahal",alldata=FALSE, print.summary=TRUE, data=NULL)
+ kern="tcub",distance="Mahal",targetfull=NULL, print.summary=TRUE, data=NULL)
 }
 
 \arguments{
@@ -31,9 +31,10 @@ semip(form,nonpar,conpar,window1=.25,window2=.25,bandwidth1=0,bandwidth2=0,
 May be abbreviated to the first letter but must be capitalized.  
 Note:  \emph{semip} looks for the first two letters to determine which variable is latitude and which is longitude, 
 so data set must be attached first or specified using the data option; options like data$latitude will not work.  Default:  Mahal. }
-  \item{alldata }{If \emph{alldata=T}, each observation is used as a target value for \emph{x}.  
-When \emph{alldata=F}, the function is estimated at a set of points chosen by the \emph{locfit} program using an adaptive decision tree approach, 
-and the \emph{akima} program is used to interpolate to the full set of observations.  Specifying \emph{alldata=T} can lead to long estimation times.}
+  \item{targetfull}{Target options to be passed to the \emph{lwr} command if \emph{conpar = NULL} or the \emph{cparlwr} command if a 
+list of variables is provided for \emph{conpar}.  Options include \emph{NULL}, "alldata", or the \emph{full} output of the \emph{maketarget}
+command.  The appropriate argument will then be passed on to the \emph{lwr} or \emph{cparlwr} command.}
+ 
   \item{print.summary }{If \emph{print.summary=T}, prints a summary of the regression results for \emph{ey} on \emph{ex}, i.e., 
  the parametric portion of the model.  Default:  \emph{print.summary=T}.}
   \item{data }{A data frame containing the data. Default:  use data in the current working directory}
@@ -82,10 +83,6 @@ The estimated variance is \eqn{\hat{\sigma^2} = rss/(n-2*df1+df2)}{sig2 = rss/(n
 where \eqn{rss = \sum_i(y_i-X_i\beta-f(z_i))^2}{rss = sum(y-XB-f(z))^2} .  The covariance matrix estimate for \eqn{\beta} is 
 \eqn{\hat{\sigma^2}((X-\hat{X})'(X-\hat{X}))^{-1}.}{sig2*((X-fitted(X))'(X-fitted(X)))^(-1).}  
 The covariance matrix is stored as \emph{vmat}. 
-
-Estimation can be very slow when \emph{alldata=T}.  When \emph{alldata=F}, the package \emph{locfit} is used to find a good set of target points at which to 
-evaluate the function.  See Loader (1999, section 12.2) for a description of the algorithm used to determine the target points.  
-The \emph{akima} package is then used to interpolate the coefficient estimates, the standard errors, and the values used to form \emph{df1} and \emph{df2}.  
 
 The nonparametric regressions are estimated using either the \emph{lwr} or \emph{cparlwr} function.  See their descriptions for more information.
 }
@@ -146,117 +143,37 @@ lines(z[o], nphat[o], col="red")
 lines(z[o], lower[o], col="red", lty="dashed")
 lines(z[o], upper[o], col="red", lty="dashed")
 
-rm(list=ls())
-
+\dontrun{
 # Chicago Housing Sales
 data(matchdata)
 match05 <- data.frame(matchdata[matchdata$year==2005,])
 match05$age <- 2005-match05$yrbuilt
 
-library(maptools)
-library(RColorBrewer)
-library(akima)
-cmap <- readShapePoly(system.file("maps/CookCensusTracts.shp",
-  package="McSpatial"))
-cmap <- cmap[cmap$CHICAGO==1,]
-cmap <- cmap[
-cmap$CAREA=="Albany Park"|
-cmap$CAREA=="Edgewater"|
-cmap$CAREA=="Edison Park"|
-cmap$CAREA=="Forest Glen"|
-cmap$CAREA=="Jefferson Park"|
-cmap$CAREA=="Lincoln Square"|
-cmap$CAREA=="North Park"|
-cmap$CAREA=="Norwood Park"|
-cmap$CAREA=="Rogers Park"|
-cmap$CAREA=="Uptown"|
-cmap$CAREA=="West Ridge", ]
-
-lmat <- coordinates(cmap)
-
-#fixed effects for community areas
-fit1 <- lm(lnprice~lnland+lnbldg+rooms+bedrooms+bathrooms+centair+fireplace+brick+
-garage1+garage2+age+rr+dcbd +factor(carea), data=match05)
-length(fit1$coef)
-attach(match05)
-xbhat <- fit1$coef[1] + fit1$coef[2]*lnland + fit1$coef[3]*lnbldg + 
- fit1$coef[4]*rooms +  fit1$coef[5]*bedrooms + fit1$coef[6]*bathrooms + 
- fit1$coef[7]*centair + fit1$coef[8]*fireplace +  fit1$coef[9]*brick + 
- fit1$coef[10]*garage1 + fit1$coef[11]*garage2 + fit1$coef[12]*age +
- fit1$coef[13]*rr + fit1$coef[14]*dcbd
-lochat <- fitted(fit1) - xbhat
-lmean = mean(lochat)
-lochat <- interpp(longitude, latitude, lochat, lmat[,1], lmat[,2], extrap=FALSE, 
-	duplicate="mean")$z
-cmap$lochat1 <- lochat - lmean + mean(lnprice)
-mapplot(cmap,"lochat1",title="Fixed  Effects & dcbd")
+tfit1 <- maketarget(~dcbd,window=.3,data=match05)
+tfit2 <- maketarget(~longitude+latitude,window=.5,data=match05)
 
 # nonparametric control for dcbd
-fit2 <- semip(lnprice~lnland+lnbldg+rooms+bedrooms+bathrooms+centair+fireplace+brick+
-garage1+garage2+ age+rr, nonpar=~dcbd, data=match05)
-2*fit2$df1 - fit2$df2
-lochat <- fit2$nphat
-lmean = mean(lochat)
-lochat <- interpp(longitude, latitude, lochat, lmat[,1], lmat[,2], extrap=FALSE, 
-	duplicate="mean")$z
-cmap$lochat2 <- lochat - lmean + mean(lnprice)
-mapplot(cmap,"lochat2",title="f(dcbd)")
+
+fit <- semip(lnprice~lnland+lnbldg+rooms+bedrooms+bathrooms+centair+fireplace+brick+
+garage1+garage2+ age+rr, nonpar=~dcbd, data=match05,targetfull=tfit1)
 
 # nonparametric controls for longitude and latitude
-fit3 <- semip(lnprice~lnland+lnbldg+rooms+bedrooms+bathrooms+centair+fireplace+brick+
-garage1+garage2+ age+rr+dcbd, nonpar=~longitude+latitude, data=match05,
+
+fit <- semip(lnprice~lnland+lnbldg+rooms+bedrooms+bathrooms+centair+fireplace+brick+
+garage1+garage2+ age+rr+dcbd, nonpar=~longitude+latitude, data=match05, targetfull=tfit2,
 distance="Latlong")
-2*fit3$df1 - fit3$df2
-lochat <- dcbd*fit3$xcoef["dcbd"] + fit3$nphat
-lmean = mean(lochat)
-lochat <- interpp(longitude, latitude, lochat, lmat[,1], lmat[,2], extrap=FALSE, 
-	duplicate="mean")$z
-cmap$lochat3 <- lochat - lmean + mean(lnprice)
-mapplot(cmap,"lochat3",title="f(longitude, latitude) & dcbd")
 
-# Conditional parametric model:  y = XB + dcbd*lambda(longitude,latitude) + u
-fit4 <- semip(lnprice~lnland+lnbldg+rooms+bedrooms+bathrooms+centair+fireplace+
+# Conditionally parametric model:  y = XB + dcbd*lambda(longitude,latitude) + u
+fit <- semip(lnprice~lnland+lnbldg+rooms+bedrooms+bathrooms+centair+fireplace+
  brick+garage1+garage2+age+rr, nonpar=~longitude+latitude, conpar=~dcbd, 
- data=match05, distance="Latlong")
-2*fit4$df1 - fit4$df2
-lochat <- fit4$npfit$yhat
-lmean = mean(lochat)
-lochat <- interpp(longitude, latitude, lochat, lmat[,1], lmat[,2], extrap=FALSE, 
-	duplicate="mean")$z
-cmap$lochat4 <- lochat - lmean + mean(lnprice)
-mapplot(cmap,"lochat4",title="dcbd*lambda(longitude, latitude)")
-cmap$dcbdhat <- interpp(fit4$npfit$target[,1],fit4$npfit$target[,2],
-  fit4$npfit$xcoef.target[,"dcbd"],lmat[,1],lmat[,2],duplicate="mean")$z
-mapplot(cmap,"dcbdhat",title="dcbd coefficients")
-
+ data=match05, distance="Latlong",targetfull=tfit1)
 
 # Conditional parametric model:  y = XB + Z*lambda(longitude,latitude) + u
 # Z = (dcbd,lnland,lnbldg,age)
-fit4 <- semip(lnprice~rooms+bedrooms+bathrooms+centair+fireplace+brick+
+fit <- semip(lnprice~rooms+bedrooms+bathrooms+centair+fireplace+brick+
 garage1+garage2+rr, nonpar=~longitude+latitude, conpar=~dcbd+lnland+lnbldg+age, 
- data=match05, distance="Latlong")
-2*fit4$df1 - fit4$df2
-lochat <- fit4$npfit$yhat
-lmean = mean(lochat)
-lochat <- interpp(longitude, latitude, lochat, lmat[,1], lmat[,2], extrap=FALSE, 
-	duplicate="mean")$z
-cmap$lochat4 <- lochat - lmean + mean(lnprice)
-mapplot(cmap,"lochat4",title="Nonparametric Part of Model")
-cmap$dcbdhat <- interpp(fit4$npfit$target[,1],fit4$npfit$target[,2],
- fit4$npfit$xcoef.target[,"dcbd"],lmat[,1],lmat[,2],duplicate="mean")$z
-mapplot(cmap,"dcbdhat",title="dcbd coefficients")
-cmap$lnlandhat <- interpp(fit4$npfit$target[,1],fit4$npfit$target[,2],
- fit4$npfit$xcoef.target[,"lnland"], lmat[,1],lmat[,2],duplicate="mean")$z
-mapplot(cmap,"lnlandhat",title="lnland coefficients")
-cmap$lnbldghat <- interpp(fit4$npfit$target[,1],fit4$npfit$target[,2],
- fit4$npfit$xcoef.target[,"lnbldg"], lmat[,1],lmat[,2],duplicate="mean")$z
-mapplot(cmap,"lnbldghat",title="lnbldg coefficients")
-cmap$agehat <- interpp(fit4$npfit$target[,1],fit4$npfit$target[,2],
- fit4$npfit$xcoef.target[,"age"], lmat[,1],lmat[,2],duplicate="mean")$z
-mapplot(cmap,"agehat",title="age coefficients")
-
-
-
+ data=match05, distance="Latlong",targetfull=tfit2)
+}
 }
 
 
@@ -265,6 +182,8 @@ mapplot(cmap,"agehat",title="age coefficients")
   \link{cparlwr}
 
   \link{lwr}
+
+  \link{maketarget}
 }
 
 \keyword{Semi-Parametric Models}

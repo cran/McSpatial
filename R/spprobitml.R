@@ -1,15 +1,40 @@
-spprobitml <- function(form,wmat,blockid=NULL,stdprobit=TRUE,data=NULL) {
+spprobitml <- function(form,wmat=NULL,shpfile=NULL,blockid=NULL,minblock=NULL,maxblock=NULL,stdprobit=TRUE,data=NULL) {
   library(spdep)
+
+  if (identical(data,NULL)) {
+    data <- model.frame(form)
+  }
+  n = nrow(data)
   xmat <- model.frame(form,data=data)
+  nk = ncol(xmat)+1
+  if (identical(minblock,NULL)) {minblock = nk}
+  if (identical(maxblock,NULL)) {maxblock = n+1}
   y <- xmat[,1]
-  xmat <- model.matrix(form,data=data)
-  n = length(y)
 
   if (identical(blockid,NULL)) {blockid <- array(1,dim=n)}
-  blockmat <- table(blockid)
-  totblock <- as.numeric(blockmat)
-  blocknum <- as.numeric(names(blockmat))
-  nblock = length(totblock)
+  block <- factor(blockid)
+  lblock <- levels(block)
+  nblock = length(lblock)
+  if (nblock>1){cat("Block diagonal W matrix will be created from shpfile; wmat will be ignored if specified","\n")}
+  needw = (!identical(shpfile,NULL)&identical(wmat,NULL))|nblock>1
+  if (needw==TRUE&identical(shpfile,NULL)){cat("ERROR:  shpfile required for estimation","\n")}
+  tblock <- table(block)
+  nbad = sum(tblock<minblock|tblock>maxblock)
+  if (nbad>0) {
+    badblock <- lblock[tblock<minblock|tblock>maxblock]
+    lblock <- lblock[!lblock%in%badblock]
+    cat("Some blocks have fewer observations than minblock","\n")
+    cat("The following blocks are removed from the data set prior to estimation:","\n")
+    print(tblock[rownames(tblock)%in%badblock])
+
+    sampvar <- block%in%lblock
+    data <- data[sampvar,]
+    block <- block[sampvar]
+    shpfile <- shpfile[sampvar,]
+  }
+  n = nrow(data)
+  nblock = length(lblock)
+
 
   if (stdprobit==TRUE) {
     fit <- glm(form,family=binomial(link="probit"),data=data)
@@ -18,16 +43,21 @@ spprobitml <- function(form,wmat,blockid=NULL,stdprobit=TRUE,data=NULL) {
   }
 
   makevar <- function(rho) {
-    xstar <- xmat
     v <- array(1,dim=n)
-    for (i in seq(1,nblock)) {
-      sampvar <- blockid==blocknum[i]
-      vmat <- solve(diag(totblock[i]) - rho*wmat[sampvar==TRUE, sampvar==TRUE])
-      xstar[sampvar==TRUE,] <- vmat%*%xmat[sampvar==TRUE,]
+    xstar <- model.matrix(form,data=data)
+
+    for (i in lblock) {
+      xmat <- model.matrix(form,data=data[block==i,])
+      if (needw==TRUE) {
+        neighbors <- poly2nb(shpfile[block==i,],queen=TRUE)
+        wmat <- nb2mat(neighbors,zero.policy=TRUE)
+      }
+      vmat <- solve(diag(nrow(xmat)) - rho*wmat)
+      xstar[block==i,] <- vmat%*%xmat
       vmat <- tcrossprod(vmat)
-      v[sampvar==TRUE] <- sqrt(diag(vmat))
+      v[block==i] <- sqrt(diag(vmat))
     }
-    out <- list(xstar,v) 
+    out <- list(xstar,v)
     names(out) <- c("xstar","v")
     return(out)
   }
@@ -36,7 +66,7 @@ spprobitml <- function(form,wmat,blockid=NULL,stdprobit=TRUE,data=NULL) {
     fit <- makevar(rho)
     xstar <- as.matrix(as.data.frame(fit$xstar)/fit$v)
     fit <- glm(y~xstar+0,family=binomial(link="probit"))
-    xb <- as.numeric(as.matrix(xstar)%*%fit$coef)
+    xb <- fit$linear.predictors
     lvar <- sum(ifelse(y==1, log(pnorm(xb)), log(1-pnorm(xb))))
     out <- list(fit$coef,lvar)
     names(out) <- c("coef","logl")
@@ -89,6 +119,7 @@ spprobitml <- function(form,wmat,blockid=NULL,stdprobit=TRUE,data=NULL) {
   colnames(outmat) <- c("Estimate", "Std. Error", "z-value", "Pr(>|z|)")
   rownames(outmat) <- c(colnames(xmat),"rho")
   print(outmat)
+  cat("Number of observations = ", n, "\n")
 
   out <- list(bvect,lvar,vmat1,vmat2)
   names(out) <- c("coef","logl","vmat1","vmat2")

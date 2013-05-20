@@ -5,7 +5,7 @@
 \emph{geodistance} calculates distances in miles between a set of observations and a location.  Distances are calculated in miles using the great circle formula.  
 Geographic coordinates must be expressed in latitudes and longitudes.
 }
-\usage{geodistance(longvar, latvar, lotarget, latarget, dcoor = TRUE)}
+\usage{geodistance(longvar, latvar, lotarget, latarget, dcoor = FALSE)}
 \arguments{
   \item{longvar}{Longitude variable, in degrees.}
   \item{latvar}{Latitude variable, in degrees.}
@@ -35,12 +35,7 @@ Geographic coordinates must be expressed in latitudes and longitudes.
 
 \examples{
 data(cookdata)
-dmat <- geodistance(longvar=cookdata$LONGITUDE ,latvar=cookdata$LATITUDE,  lotarget=-87.627800, 
-	latarget=41.881998)
-cookdata$dcbd <- dmat$dist
-cookdata$dnorth <- dmat$dnorth
-cookdata$deast <- dmat$deast
-
+dcbd <- geodistance(cookdata$LONGITUDE, cookdata$LATITUDE, -87.627800, 41.881998)$dist
 }
 
 \keyword{Distance}

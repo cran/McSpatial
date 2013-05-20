@@ -51,8 +51,9 @@ matchprop <- function(form,data=NULL,distance="logit",discard="both",reestimate=
 
     smalldata <- data.frame(smalldata$origobs,p,yvar)
     names(smalldata) <- c("origobs","p","yvar")
-    if (m.order=="largest")  {o <- order(smalldata$p,decreasing=TRUE)  }
-    if (m.order=="smallest") {o <- order(smalldata$p,decreasing=FALSE) }
+    o <- seq(1,nrow(smalldata))
+    if (m.order=="decreasing")  {o <- order(smalldata$p,decreasing=TRUE)  }
+    if (m.order=="increasing") {o <- order(smalldata$p,decreasing=FALSE) }
     if (m.order=="random")   {o <- order(rnorm(nrow(smalldata))) }
     if (m.order!="none")  {smalldata <- smalldata[o,] }
     data0 <- smalldata[smalldata$yvar==0,]

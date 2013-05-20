@@ -9,7 +9,7 @@ Conditionally parametric logit for two or more choices
 
 \usage{ 
 cparmlogit(form,nonpar,window=.25,bandwidth=0,kern="tcub",
-distance="Mahal",alldata=FALSE,data=NULL)  
+distance="Mahal",target=NULL,data=NULL)  
 }
 
 \arguments{
@@ -25,9 +25,9 @@ Important:  note the "~" before the first \emph{z} variable.
 May be abbreviated to the first letter but must be capitalized.  
 Note:  \emph{cparmlogit} looks for the first two letters to determine which variable is latitude and which is longitude, 
 so the data set must be attached first or specified using the data option; options like data$latitude will not work.  Default:  Mahal. }
-  \item{alldata }{If \emph{alldata=T}, each observation is used as a target value for \emph{z}.  
-When \emph{alldata=F}, the function is estimated at a set of points chosen by the \emph{locfit} program using an adaptive decision tree approach, 
-and the \emph{akima} program is used to interpolate to the full set of observations.  Specifying \emph{alldata=T} can lead to long estimation times.}
+  \item{target}{If \emph{target = NULL}, uses the \emph{maketarget} command to form targets using the values specified for \emph{window}, 
+\emph{bandwidth}, and \emph{kern}.  If \emph{target="alldata"}, each observation is used as a target value for \emph{x}.  
+A set of target values can be supplied directly.}
   \item{data }{A data frame containing the data. Default:  use data in the current working directory}
 }
 
@@ -77,11 +77,8 @@ Following White (1982), the covariance matrix for a quasi-maximum likelihood mod
 \deqn{B = \sum_{i=1}^n w_i^2 \frac{\partial LnL_i}{\partial \beta}\frac{\partial LnL_i}{\partial \beta ^\prime} }{B = \sum w_i^2 (dLnL_i/d\beta)(dLnL_i/d\beta')  }
 
 The covariance matrix is calculated at each target point and the implied standard errors are then interpolated to each data point.
-
-Estimation can be very slow when \emph{alldata=T} or when the number of choices is large.  
-When \emph{alldata=F}, the package \emph{locfit} is used to find a good set of target points at which to evaluate the function.  
-See Loader (1999, section 12.2) for a description of the algorithm used to determine the target points.  
-The \emph{akima} package is then used to interpolate the coefficient estimates and standard errors. 
+Estimation can be very slow when \emph{target = "alldata"}.  The \emph{maketarget} command can be used to identify target points. 
+ 
 
 Available kernel weighting functions include the following: 
 

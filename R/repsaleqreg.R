@@ -1,5 +1,4 @@
 repsaleqreg <- function(price0,time0,price1,time1,mergefirst=1,graph=TRUE,graph.conf=TRUE,conf=.95,print=TRUE) {
-  library(quantreg)
 
   dy <- price1-price0
   timevar <- levels(factor(c(time0,time1)))

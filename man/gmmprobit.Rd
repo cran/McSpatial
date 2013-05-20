@@ -25,7 +25,7 @@ Specified as \emph{startrho=0.}}
 Imposes that all elements outside of the blocks equal zero and then re-standardizes \emph{W} such that the rows sum to one. 
 By default, \emph{blockid = 0}, and a block diagonal structure is \emph{not} imposed.}
   \item{cvcrit}{Convergence criterion.  Default:  \emph{cvcrit} = 0.0001.}
-  \item{data }{A data frame containing the data. Default:  use data in the current working directory}
+  \item{data }{A data frame containing the data. Default:  use data in the current working directory.}
   \item{silent }{If \emph{silent=T}, no output is printed}
 }
 
@@ -101,13 +101,12 @@ Discrete-Choice Models," \emph{Journal of Econometrics} 85 (1998), 125-154. \cr
 
 \examples{
 set.seed(9947)
-library(maptools)
 cmap <- readShapePoly(system.file("maps/CookCensusTracts.shp",
   package="McSpatial"))
 cmap <- cmap[cmap$CHICAGO==1&cmap$CAREA!="O'Hare",]
 lmat <- coordinates(cmap)
-dnorth <- geodistance(lmat[,1],lmat[,2], lotarget=-87.627800, 
-	latarget=41.881998)$dnorth
+dnorth <- geodistance(lmat[,1],lmat[,2], -87.627800, 
+	41.881998, dcoor=TRUE)$dnorth
 cmap <- cmap[dnorth>0,]
 wmat <- makew(cmap)$wmat
 n = nrow(wmat)

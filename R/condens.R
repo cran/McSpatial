@@ -2,7 +2,6 @@ condens <- function(form,window=.7,bandwidth=0,kern="tcub",mingrid.x=NULL,maxgri
   xlab="x",ylab="y",zlab="fxy/fx",
   contour=TRUE,level=TRUE,wire=TRUE,dens=TRUE,targetx.dens=NULL,quantile.dens=c(.10,.25,.50,.75,.90),data=NULL) {
 
-  library(locfit)
   library(lattice)
   mat <- model.frame(form,data=data)
   y <- mat[,1]
@@ -17,14 +16,17 @@ condens <- function(form,window=.7,bandwidth=0,kern="tcub",mingrid.x=NULL,maxgri
   if (kern=="trwt")  { wgt <- function(psi) { (35/32)*((1 - psi^2)^3) } }
   if (kern=="gauss") { wgt <- function(psi) { dnorm(psi) } }
 
-  if (bandwidth==0) {
-    targetx <- lfeval(locfit(~lp(x,nn=window,deg=0),kern=kern))$xev
-    targety <- lfeval(locfit(~lp(y,nn=window,deg=0),kern=kern))$xev
+  if (window>0){
+    targetx <- maketarget(~x,window=window,bandwidth=0,kern=kern)$target
+    targety <- maketarget(~y,window=window,bandwidth=0,kern=kern)$target
   }
-  if (bandwidth>0) {
-    targetx <- lfeval(locfit(~lp(x,h=bandwidth*sd(x),deg=0),kern=kern))$xev
-    targety <- lfeval(locfit(~lp(y,h=bandwidth*sd(y),deg=0),kern=kern))$xev
+  if (bandwidth>0){
+    targetx <- maketarget(~x,window=0,bandwidth=bandwidth*sd(x),kern=kern)$target
+    targety <- maketarget(~y,window=0,bandwidth=bandwidth*sd(y),kern=kern)$target
   }
+  targetx <- sort(targetx)
+  targety <- sort(targety)
+
   targetxy <- expand.grid(targetx,targety)
   nx = length(targetx)
   ny = length(targety)
@@ -63,9 +65,10 @@ condens <- function(form,window=.7,bandwidth=0,kern="tcub",mingrid.x=NULL,maxgri
     fxy.target[i] = mean(kx*ky)
   }
 
-  fx <- aspline(targetx,fx.target,x)$y
-  fy <- aspline(targety,fy.target,y)$y
-  fxy <- interpp(targetxy[,1],targetxy[,2],fxy.target,x,y,duplicate="mean")$z
+  fx <- smooth12(targetx,fx.target,x)
+  fy <- smooth12(targety,fy.target,y)
+  fxy <- smooth12(targetxy,fxy.target,cbind(x,y))
+
 
   if (identical(mingrid.x,NULL)) { mingrid.x = min(x) }
   if (identical(maxgrid.x,NULL)) { maxgrid.x = max(x) }
@@ -77,8 +80,8 @@ condens <- function(form,window=.7,bandwidth=0,kern="tcub",mingrid.x=NULL,maxgri
   xy <- expand.grid(grid.x,grid.y)
   grid.x <- xy[,1]
   grid.y <- xy[,2]
-  grid.fxy <- interpp(targetxy[,1],targetxy[,2],fxy.target, grid.x, grid.y,duplicate="mean")$z
-  grid.fx <- aspline(targetx,fx.target,grid.x)$y
+  grid.fxy <- smooth12(targetxy,fxy.target,xy)
+  grid.fx <- smooth12(targetx,fx.target,grid.x)
   grid.fxy <- grid.fxy/grid.fx
   gridmat <- cbind(grid.x,grid.y,grid.fxy)
 
@@ -107,7 +110,7 @@ condens <- function(form,window=.7,bandwidth=0,kern="tcub",mingrid.x=NULL,maxgri
       ky <- ifelse(kern!="gauss"&dist>maxd,0,ky)/maxd
       fy.target[i] = mean(kx*ky)/fx1
     }
-    densmat[,j] <- aspline(targety,fy.target,y)$y
+    densmat[,j] <- smooth12(targety,fy.target,y)
 
   }
     

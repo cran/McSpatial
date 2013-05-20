@@ -12,7 +12,7 @@ Estimates a model of the form \emph{y = XB(z) + u} using locally weighted quanti
 \usage{ 
 qregcpar(form,nonpar,taumat=c(.10,.25,.50,.75,.90),
   window=.25,bandwidth=0,kern="tcub",distance="Mahal",
-  alldata=FALSE,data=NULL) 
+  target=NULL,data=NULL) 
 }
 
 \arguments{
@@ -29,9 +29,10 @@ Important:  note the "~" before the first \emph{z} variable.
 May be abbreviated to the first letter but must be capitalized.  
 Note:  \emph{qregcpar} looks for the first two letters to determine which variable is latitude and which is longitude, 
 so the data set must be attached first or specified using the data option; options like data$latitude will not work.  Default:  Mahal. }
-  \item{alldata }{If \emph{alldata=T}, each observation is used as a target value for \emph{z}.  
-When \emph{alldata=F}, the function is estimated at a set of points chosen by the \emph{locfit} program using an adaptive decision tree approach, 
-and the \emph{akima} program is used to interpolate to the full set of observations.  Specifying \emph{alldata=T} can lead to long estimation times.}
+  \item{target}{If \emph{target = NULL}, uses the \emph{maketarget} command to form targets using the values specified for \emph{window}, 
+\emph{bandwidth}, and \emph{kern}.  If \emph{target="alldata"}, each observation is used as a target value for \emph{x}.  
+A set of target values can be supplied directly. }
+
   \item{data }{A data frame containing the data. Default:  use data in the current working directory}
 }
 
@@ -71,9 +72,7 @@ The kernel weighting function becomes \emph{K(distance/h)} under the \emph{"Latl
 For each quantile, the estimated coefficient matrix, \emph{xcoef}, includes an intercept (the first column in \emph{k} of \emph{xcoef}) 
 and the coefficients for the explanatory variables.  The dimension of \emph{xcoef} is \emph{n x ntau x k}.  
 
-Estimation can be very slow when \emph{alldata=T}.  When \emph{alldata=F}, the package \emph{locfit} is used to find a good set of target points at which to evaluate the function.  
-See Loader (1999, section 12.2) for a description of the algorithm used to determine the target points.  
-The \emph{akima} package is then used to interpolate the predicted values, the coefficient estimates, and the standard errors, 
+Estimation can be very slow when \emph{target = "alldata"}.  The \emph{maketarget} command can be used to identify target points. 
 
 Available kernel weighting functions include the following: 
 
@@ -135,7 +134,6 @@ plot(cookdata$DCBD, cookdata$LNFAR,main="Log Floor Area Ratio",
   xlab="Distance from CBD",ylab="Log FAR")
 points(cookdata$DCBD, fit$yhat[,2], col="red")
 
-library(maptools)
 library(RColorBrewer)
 cmap <- readShapePoly(system.file("maps/CookCensusTracts.shp",
   package="McSpatial"))

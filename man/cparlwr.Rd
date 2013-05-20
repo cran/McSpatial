@@ -9,7 +9,7 @@ Estimates a model of the form \emph{y = XB(z) + u}, where \emph{z} can include o
 
 \usage{ 
 cparlwr(form,nonpar,window=.25,bandwidth=0,kern="tcub",
-  distance="Mahal",alldata=FALSE,data=NULL)
+  distance="Mahal",targetobs=NULL,data=NULL)
 }
 
 \arguments{
@@ -25,9 +25,10 @@ Important:  note the "~" before the first \emph{z} variable.
 May be abbreviated to the first letter but must be capitalized.  
 Note:  \emph{cparlwr} looks for the first two letters to determine which variable is latitude and which is longitude, 
 so the data set must be attached first or specified using the data option; options like data$latitude will not work.  Default:  Mahal. }
-  \item{alldata }{If \emph{alldata=T}, each observation is used as a target value for \emph{z}.  
-When \emph{alldata=F}, the function is estimated at a set of points chosen by the \emph{locfit} program using an adaptive decision tree approach, 
-and the \emph{akima} program is used to interpolate to the full set of observations.  Specifying \emph{alldata=T} can lead to long estimation times.}
+  \item{targetobs}{If \emph{targetobs = NULL}, uses the \emph{maketarget} command to form targets.  
+If \emph{target="alldata"}, each observation is used as a target value for \emph{x}.  
+A set of target can also be supplied directly by listing the observation numbers of the target data points.  The observation numbers can be
+identified using the \emph{obs} variable produced by the \emph{maketarget} command.}
   \item{data }{A data frame containing the data. Default:  use data in the current working directory}
 }
 
@@ -35,11 +36,9 @@ and the \emph{akima} program is used to interpolate to the full set of observati
   \item{target}{The target points for the original estimation of the function.}
   \item{ytarget}{The predicted values of \emph{y} at the target values \emph{z}.}
   \item{xcoef.target}{Estimated coefficients, \emph{B(z)}, at the target values of \emph{z}.}
-  \item{ytarget.se}{Standard errors for the predicted \emph{y} at the target values of \emph{z}.}
   \item{xcoef.target.se}{Standard errors for \emph{B(z)} at the target values of \emph{z}.}
   \item{yhat}{Predicted values of \emph{y} at the original data points.}
   \item{xcoef}{Estimated coefficients, \emph{B(z)}, at the original data points.}
-  \item{yhat.se}{Standard errors for the predicted values of \emph{y}, full data set.}
   \item{xcoef.se}{Standard errors for \emph{B(z)} with \emph{z} evaluated at all points in the data set.}
   \item{df1}{\emph{tr(L)}, a measure of the degrees of freedom used in estimation.}
   \item{df2}{\emph{tr(L'L)}, an alternative measure of the degrees of freedom used in estimation.  }
@@ -84,17 +83,15 @@ The function \emph{cparlwrgrid} can be used to search for the value of \emph{h} 
 Since each estimate is a linear function of all \emph{n} values for \emph{y}, the full set of estimates takes the form \emph{yhat = LY}, where \emph{L} is an \emph{nxn} matrix. 
 Loader (1999) suggests two measures of the number of degrees of freedom used in estimation:  \emph{df1 = tr(L)} and \emph{df2 = tr(L'L)}.  
 The diagonal elements of \emph{tr(L)} are stored in the array \emph{infl}.  
-Since the degrees of freedom measures can differ substantially when \emph{alldata=T} and \emph{alldata=F}, it is a good idea to report final estimates using \emph{alldata=T} when possible.
+Since the degrees of freedom measures can differ substantially when \emph{target="alldata"} rather than using a set of target points, 
+it is a good idea to report final estimates using \emph{target="alldata"} when possible.
 
 Again following Loader (1999), the degrees of freedom correction used to estimate the error variance, \emph{sig2}, is \emph{df = 2*df1 -  df2}.  
 Let \emph{e} represent the vector of residuals, \emph{y - yhat}.  The estimated variance is \eqn{sig2 = \sum_i e_i^2 / (n-df)}{sig2 = \sum e^2/(n-df)}. 
 The covariance matrix for \eqn{B(z_0)} 
 is \deqn{\hat{\sigma}^2(\sum_{i=1}^n X_i K(\phi_i) X_i^\top)^{-1}(\sum_{i=1}^n X_i (K(\phi_i))^2 X_i^\top )(\sum_{i=1}^n X_i K(\phi_i) X_i^\top)^{-1}.}{sig2 (\sum XK(\phi)X')^(-1)(\sum XK(\phi)^2X')(\sum XK(\phi)X')^(-1) }
 
-Estimation can be very slow when \emph{alldata=T}.  When \emph{alldata=F}, the package \emph{locfit} is used to find a good set of target points at which to evaluate the function.  
-See Loader (1999, section 12.2) for a description of the algorithm used to determine the target points.  
-The \emph{akima} package is then used to interpolate the predicted values, the coefficient estimates, the standard errors, 
-and the values used to form \emph{df1} and \emph{df2}.  
+Estimation can be very slow when \emph{targetobs = "alldata"}.  The \emph{maketarget} command can be used to identify target points. 
 
 Available kernel weighting functions include the following: 
 

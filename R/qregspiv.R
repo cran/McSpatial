@@ -1,6 +1,5 @@
 qregspiv <- function(form,wy=NULL,wmat=NULL,inst=NULL,winst=NULL,shpfile=NULL,tau=.5,rhomat=NULL,
   printsariv=FALSE,silent=FALSE,nboot=100,alpha=.05,data=NULL) {
-  library(quantreg)
 
   qdata <- model.frame(form,data=data)
   y <- qdata[,1]

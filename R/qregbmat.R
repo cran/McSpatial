@@ -1,5 +1,4 @@
 qregbmat <- function(form,taumat=seq(.10,.90,.10),graphb=TRUE,graph.factor=FALSE,data=NULL) {
-  library(quantreg)
 
   xname <- colnames(model.matrix(form,data=data))
   ntau = length(taumat)

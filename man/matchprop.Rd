@@ -116,13 +116,14 @@ If \emph{reestimate} = T, the propensity scores are reestimated after any observ
 }
 
 \references{
-Deng, Yongheng, Sing Tien Foo, and Daniel P. McMillen, "Private Residential Price Indices in Singapore," \emph{Regional Science and Urban Economics}, (forthcoming).
+Deng, Yongheng, Sing Tien Foo, and Daniel P. McMillen, "Private Residential Price Indices in Singapore," \emph{Regional Science and Urban Economics}, 
+42 (2012), 485-494.
 
 Ho, D., Imai, K., King, G, Stuart, E., "Matching as Nonparametric Preprocessing for Reducing Model Dependence in Parametric Causal Inference," \emph{Political Analysis} 15 (2007), 199-236.
 
 Ho, D., Imai, K., King, G, Stuart, E., "MatchIt:  Nonparametric preprocessing for parametric causal inference," \emph{Journal of Statistical Software} 42 (2011), 1-28..
 
-McMillen, Daniel P., "Repeat Sales as a Matching Estimator," \emph{Real Estate Economics} (forthcoming).
+McMillen, Daniel P., "Repeat Sales as a Matching Estimator," \emph{Real Estate Economics} 40 (2012), 743-771.
 }
 
 \keyword{Matching}

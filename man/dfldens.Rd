@@ -21,7 +21,7 @@ specified by setting \emph{bandwidth} = 0 and \emph{window} = 0.}
   \item{yname}{The name to be used for the variable whose density functions are drawn when \emph{graph=T}.  Default:  \emph{yname = "y"}.}
   \item{alldata}{If \emph{TRUE}, the density functions are calculated using each observation in turn as a target value.  
 When \emph{alldata=F}, densities are calculated at a set of points chosen by the \emph{locfit} program using an adaptive decision tree approach, 
-and the \emph{akima} program is used to interpolate to the full set of observations.}
+and the \emph{smooth12} command is used to interpolate to the full set of observations.}
   \item{data}{A data frame with the variables for the logit or probit model specified by \emph{lgtform}.  Note: the data frame for \emph{y} must be 
 specified even if it is part of \emph{data}.}
 }
